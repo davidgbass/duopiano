@@ -512,7 +512,7 @@ function dessinerPortee(svg,geo,x0,x1,opts={}){
   let h='';
   for(const p of geo.portees){
     for(let k=0;k<5;k++){const y=p.bas-k*2*ESP;h+=`<line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}" stroke="var(--staff)" stroke-width="1.6"/>`;}
-    if(p.cle==='sol') h+=`<text x="${x0+10}" y="${p.bas-2*ESP}" font-family="var(--f-music)" font-size="${opts.fs||80}" fill="var(--staff)">\u{1D11E}</text>`;
+    if(p.cle==='sol') h+=`<text x="${x0+10}" y="${p.bas}" font-family="var(--f-music)" font-size="${opts.fs||80}" fill="var(--staff)">\u{1D11E}</text>`;
     else h+=`<text x="${x0+10}" y="${p.bas-ESP}" font-family="var(--f-music)" font-size="${opts.fs||80}" fill="var(--staff)">\u{1D122}</text>`;
   }
   if(geo.portees.length===2){const a=geo.portees[0].bas-8*ESP,b=geo.portees[1].bas;h+=`<line x1="${x0}" x2="${x0}" y1="${a}" y2="${b}" stroke="var(--staff)" stroke-width="2.4"/>`;}
