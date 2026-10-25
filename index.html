@@ -293,7 +293,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <div class="largeur">
     <header class="barre"><button class="fermer" data-retour aria-label="Retour">←</button><h1 style="margin:0 auto 0 4px">Mes notes</h1></header>
     <div class="carte"><p>Chaque note que tu as rencontrée, avec ce que tu en sais. La révision choisit d'abord les notes en rouge.</p>
-      <div class="legende"><span style="--c:var(--ok)">Je la connais</span><span style="--c:var(--gold)">Presque</span><span style="--c:var(--bad)">À pratiquer</span><span style="--c:var(--line)">À découvrir</span></div>
+      <div class="legende"><span style="--c:var(--ok)">Je la connais, vite</span><span style="--c:var(--gold)">Presque</span><span style="--c:var(--bad)">À pratiquer</span><span style="--c:var(--line)">À découvrir</span></div>
     </div>
     <div class="carte"><h2>Sur le clavier</h2><div class="grille-notes" id="g-clavier"></div></div>
     <div class="carte"><h2>Sur la portée</h2><div class="grille-notes" id="g-portee"></div></div>
@@ -369,14 +369,14 @@ const UNITES=[
  {num:2,titre:'La clé de sol',sous:'La main droite lit la portée du haut',niveaux:[
   {id:'s1',titre:'Le Do central',mode:'portee',cle:'sol',ds:plage('C4','E4'),aide:2,sec:10,
    lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4'],rep:['C4'],txt:['Le Do central est au milieu du piano, en face de toi.','Sur la portée, il a sa petite ligne à lui, sous les cinq lignes.','Ré est juste sous la portée. Mi est sur la première ligne.'],dit:'Le Do central, c\'est ta maison. On part toujours de lui.'}},
-  {id:'s2',titre:'La position de Do',mode:'portee',cle:'sol',ds:plage('C4','G4'),aide:2,sec:9,
+  {id:'s2',titre:'La position de Do',mode:'portee',cle:'sol',ds:plage('C4','G4'),aide:1,sec:9,
    lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4','F4','G4'],rep:['C4'],txt:['Pose le pouce droit sur le Do central. Chaque doigt a sa touche.','Sur la portée, chaque note monte d\'un pas : ligne, interligne, ligne.','Une touche à droite sur le piano, c\'est un pas plus haut sur la portée.'],dit:'Cinq doigts, cinq notes. Facile !'}},
   {id:'s3',titre:'Le repère Sol',mode:'portee',cle:'sol',ds:plage('E4','B4'),aide:1,sec:8,
-   lecon:{type:'portee',cle:'sol',notes:['E4','F4','G4','A4','B4'],rep:['G4'],txt:['La clé de sol s\'enroule autour de la deuxième ligne. Cette ligne, c\'est Sol.','Un pas plus haut, c\'est La. Un pas plus bas, c\'est Fa.','Les noms ne sont plus écrits. Les couleurs t\'aident encore un peu.'],dit:'Regarde où la clé fait sa boucle.'}},
+   lecon:{type:'portee',cle:'sol',notes:['E4','F4','G4','A4','B4'],rep:['G4'],txt:['La clé de sol s\'enroule autour de la deuxième ligne. Cette ligne, c\'est Sol.','Un pas plus haut, c\'est La. Un pas plus bas, c\'est Fa.','Les noms et les couleurs ne sont plus là. Trouve le Sol, puis compte les pas.'],dit:'Regarde où la clé fait sa boucle.'}},
   {id:'s4',titre:'Pas et sauts',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:1,sec:8,
    lecon:{type:'portee',cle:'sol',notes:['C4','E4','G4','B4','D4','F4','A4','C5'],rep:['C4','G4'],txt:['Un pas : de la ligne à l\'interligne. Sur le piano, la touche voisine.','Un saut : de ligne à ligne. Sur le piano, tu sautes une touche.','Pars du repère le plus proche et compte.'],dit:'Ligne, ligne, ligne : ça saute !'}},
   {id:'s5',titre:'Sans les couleurs',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:0,sec:7,
-   lecon:{type:'portee',cle:'sol',notes:['C4','G4','C5'],rep:['C4','G4','C5'],txt:['Les notes sont toutes noires, comme dans un vrai livre de piano.','Tes repères : le Do central, le Sol de la clé, et le Do du troisième interligne.','Lis la position, puis joue.'],dit:'Tu lis comme une vraie pianiste ou un vrai pianiste.'}},
+   lecon:{type:'portee',cle:'sol',notes:['C4','G4','C5'],rep:['C4','G4','C5'],txt:['Les notes sont toutes noires, comme dans un vrai livre de piano.','Tes repères : le Do central, le Sol de la clé, et le Do du troisième interligne.','Lis la position, puis joue.'],dit:'Trois repères suffisent pour trouver toutes ces notes.'}},
   {id:'s6',titre:'Le Do aigu',mode:'portee',cle:'sol',ds:plage('A4','G5'),aide:1,sec:7,
    lecon:{type:'portee',cle:'sol',notes:['A4','B4','C5','D5','E5','F5','G5'],rep:['C5'],txt:['Le Do aigu est dans le troisième interligne. C\'est un nouveau repère.','Il est une octave plus haut que le Do central : compte 7 touches blanches.','Monte par pas à partir de lui jusqu\'au Sol au-dessus de la portée.'],dit:'On monte tout en haut de la portée.'}},
  ]},
@@ -394,12 +394,14 @@ const UNITES=[
   {id:'g1',titre:'Les deux portées',mode:'portee',cle:'grand',ds:plage('C3','C5'),aide:1,sec:7,
    lecon:{type:'portee',cle:'grand',notes:['C3','F3','C4','G4','C5'],rep:['C3','F3','C4','G4','C5'],txt:['La clé de sol en haut, la clé de fa en bas : c\'est la grande portée.','Les deux portées se touchent au Do central.','Regarde d\'abord la clé, puis la position.'],dit:'Deux clés, cinq repères.'}},
   {id:'g2',titre:'Toute la grande portée',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:6,
-   lecon:{type:'portee',cle:'grand',notes:['G2','C3','F3','C4','G4','C5','G5'],rep:['G2','C3','F3','C4','G4','C5'],txt:['Toutes les notes, du Fa grave au Sol aigu.','Aucune aide. Tu as tous tes repères.','Prends ton temps pour lire, puis joue franc.'],dit:'Tu es prête ou prêt pour le grand défi.'}},
+   lecon:{type:'portee',cle:'grand',notes:['G2','C3','F3','C4','G4','C5','G5'],rep:['G2','C3','F3','C4','G4','C5'],txt:['Toutes les notes, du Fa grave au Sol aigu.','Aucune aide. Tu as tous tes repères.','Prends ton temps pour lire, puis joue franc.'],dit:'Commence toujours par regarder la clé.'}},
   {id:'g3',titre:'Le grand défi',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:4.6,n:30,
-   lecon:{type:'portee',cle:'grand',notes:['F2','C4','G5'],rep:['C4'],txt:['Trente notes, plus vite que d\'habitude.','Les points grimpent avec ta série de bonnes réponses.','Trois étoiles ici, c\'est la ceinture noire de la lecture.'],dit:'Je crois en toi !'}},
+   lecon:{type:'portee',cle:'grand',notes:['F2','C4','G5'],rep:['C4'],txt:['Trente notes, plus vite que d\'habitude.','Les points grimpent avec ta série de bonnes réponses.','Trois étoiles ici, c\'est la ceinture noire de la lecture.'],dit:'Lis la note, trouve le repère, joue.'}},
  ]},
 ];
 const NIVEAUX=UNITES.flatMap(u=>u.niveaux.map(n=>(n.unite=u,n)));
+NIVEAUX.forEach((n,i)=>{const meme=NIVEAUX.slice(0,i).filter(a=>a.mode===n.mode&&(n.cle==='grand'||a.cle===n.cle));
+  n.anciens=[...new Set(meme.flatMap(a=>a.ds))].filter(d=>!n.ds.includes(d));});
 
 /* ---------- Données ---------- */
 const CLE='notesExpress.v1';
@@ -596,7 +598,20 @@ function accueil(){
     sec.append(sent);ch.append(sec);
   }
 }
-$('#puce-profil').onclick=()=>{ if(DATA.profils.length<2){reglages();return;} DATA.actif=(DATA.actif+1)%DATA.profils.length;sauver();accueil();toast('Joueur : '+P().nom); };
+$('#puce-profil').onclick=choisirJoueur;
+function choisirJoueur(){
+  const v=$('#voile');v.innerHTML='';const f=document.createElement('div');f.className='feuille';f.setAttribute('role','dialog');f.setAttribute('aria-label','Qui joue ?');
+  f.innerHTML=`<div class="rangee" style="justify-content:space-between"><h2 style="margin:0">Qui joue ?</h2><button class="fermer" aria-label="Fermer">×</button></div>
+   <div class="segment" id="j-liste" style="margin:14px 0"></div>
+   <form id="j-form" class="champ"><label for="j-nom">Nouveau joueur</label><div class="rangee" style="flex-wrap:nowrap"><input type="text" id="j-nom" maxlength="20" autocomplete="off" placeholder="Son prénom"><button class="btn prim petit" type="submit">Ajouter</button></div></form>`;
+  v.append(f);v.hidden=false;
+  const fermer=()=>{v.hidden=true;v.innerHTML='';accueil();};
+  f.querySelector('.fermer').onclick=fermer;v.onclick=e=>{if(e.target===v)fermer();};
+  DATA.profils.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.textContent=p.nom+' · ★ '+Object.values(p.etoiles).reduce((a,c)=>a+c,0);b.setAttribute('aria-pressed',String(i===DATA.actif));
+    b.onclick=()=>{DATA.actif=i;sauver();fermer();toast('Joueur : '+P().nom);};$('#j-liste').append(b);});
+  $('#j-form').onsubmit=e=>{e.preventDefault();const n=$('#j-nom').value.trim();if(!n){$('#j-nom').focus();return;}
+    DATA.profils.push(profil(n));DATA.actif=DATA.profils.length-1;sauver();fermer();toast('Bienvenue, '+n+' !');};
+}
 $('#puce-serie').onclick=()=>toast('Joue un peu chaque jour pour allonger ta série.');
 $('#puce-etoiles').onclick=()=>toast('Chaque niveau donne jusqu\'à 3 étoiles dans le défi.');
 $('#b-micro').onclick=()=>testMicro();
@@ -638,6 +653,7 @@ function ouvrirLecon(i){
 /* ---------- Choix des notes (révision espacée) ---------- */
 const cleStat=(niv,d)=>niv.oct==='any'?'pc:'+LETTRES[d%7]:LETTRES[d%7]+Math.floor(d/7);
 function choisir(niv,prec){
+  if(niv.anciens&&niv.anciens.length&&Math.random()<.25) return choisir({...niv,ds:niv.anciens,anciens:null},prec);
   const st=P().stats;
   const w=niv.ds.map(d=>{const s=st[cleStat(niv,d)];let x=1;
     if(!s||s.ok+s.err<3)x+=1.2;else{x+=4*s.err/(s.ok+s.err);if(s.ok&&s.t/s.ok>2600)x+=.8;}
@@ -646,7 +662,7 @@ function choisir(niv,prec){
 }
 function noter(niv,d,ok,ms){const k=cleStat(niv,d),s=P().stats[k]||(P().stats[k]={ok:0,err:0,t:0});if(ok){s.ok++;s.t+=Math.min(ms,8000);}else s.err++;
   if(s.ok+s.err>40){s.ok=Math.round(s.ok*.8);s.err=Math.round(s.err*.8);s.t=Math.round(s.t*.8);}}
-function maitrise(s){ if(!s||s.ok+s.err<3) return 0; const r=s.ok/(s.ok+s.err); return r>=.9?3:r>=.7?2:1; }
+function maitrise(s){ if(!s||s.ok+s.err<3) return 0; const r=s.ok/(s.ok+s.err),vite=s.ok&&s.t/s.ok<=2000; return r>=.9&&vite?3:r>=.7?2:1; }
 function lancerRevision(){
   const st=P().stats,joues=NIVEAUX.filter(n=>n.mode==='portee'&&n.ds.some(d=>st[cleStat(n,d)]));
   if(!joues.length){const k=NIVEAUX[3];lancer({...k,id:'revision',titre:'Révision',revision:true},'pratique');return;}
@@ -659,21 +675,28 @@ function lancerRevision(){
 
 /* ---------- Jeu ---------- */
 let G=null,clavJeu=null;
-const PHRASES_OK=['Bravo !','Oui !','Super !','Bien lu !','Wow !','Parfait !','Tu l\'as !'];
-const PHRASES_COMBO=['5 de suite !','Tu es en feu !','Incroyable série !','Personne ne t\'arrête !'];
+const CLAVIER_OU=['à gauche des 2 touches noires','entre les 2 touches noires','à droite des 2 touches noires','à gauche des 3 touches noires','entre la 1re et la 2e des 3 touches noires','entre la 2e et la 3e des 3 touches noires','à droite des 3 touches noires'];
+const REPERES=[[dDe('G2'),'Sol de la ligne du bas'],[dDe('C3'),'Do grave'],[dDe('F3'),'Fa de la clé'],[dDe('C4'),'Do central'],[dDe('G4'),'Sol de la clé'],[dDe('C5'),'Do aigu']];
+function explication(d){
+  if(G.geo.nom) return `${nomD(d)}, ${CLAVIER_OU[d%7]}`;
+  let best=REPERES[0];for(const r of REPERES)if(Math.abs(r[0]-d)<Math.abs(best[0]-d))best=r;
+  const k=d-best[0];if(!k) return `${nomD(d)} : c'est le ${best[1]}`;
+  const pas=Math.abs(k)===1?'un pas':Math.abs(k)===2?'un saut':Math.abs(k)+' pas';
+  return `${nomD(d)} : ${pas} ${k>0?'au-dessus':'sous'} le ${best[1]}`;
+}
 function lancer(niv,mode){
   const geo=niv.mode==='nom'?{H:250,nom:true}:geom(niv.cle);
   const sc=$('#scene');montrer('jeu');const rc=sc.getBoundingClientRect();
   const W=Math.round(Math.max(440,Math.min(1000,geo.H*1.15*(rc.width/Math.max(1,rc.height)))));
   G={W,niv,mode,geo,total:mode==='defi'?(niv.n||20):12,crees:0,faits:0,score:0,combo:0,maxCombo:0,bons:0,notes:[],t:0,prochain:0,revoir:{},pret:false,fin:false,
-     HIT:geo.nom?110:175,X0:W+50,vitesse:(W+40-(geo.nom?110:175))/(niv.sec/R().vitesse),ecart:Math.max(1.15,niv.sec*.3)/R().vitesse,erreurs:0,sansAide:niv.aide===0};
+     HIT:geo.nom?110:175,X0:W+50,vitesse:(W+40-(geo.nom?110:175))/(niv.sec/R().vitesse),ecart:Math.max(1.15,niv.sec*.3)/R().vitesse,erreurs:0,sansAide:niv.aide===0,adapt:1,rapides:0};
   garderEcran();
   const svg=$('#planche');svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${W} ${geo.H}`);
   if(geo.nom){ svg.insertAdjacentHTML('beforeend',`<line x1="0" x2="${W}" y1="125" y2="125" stroke="var(--line)" stroke-width="2" stroke-dasharray="6 10"/>`); }
   else dessinerPortee(svg,geo,0,W);
   svg.insertAdjacentHTML('beforeend',`<rect class="zone-frappe" x="${G.HIT-34}" y="0" width="68" height="${geo.H}" rx="12"/><line x1="${G.HIT}" x2="${G.HIT}" y1="6" y2="${geo.H-6}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="3 6" opacity=".6"/>`);
   G.calque=svgEl('g');G.fx=svgEl('g');svg.append(G.calque,G.fx);
-  const [lo,hi]=bornesClavier(niv.ds,niv.mode);
+  const [lo,hi]=bornesClavier(niv.ds.concat(niv.anciens||[]),niv.mode);
   clavJeu=clavier($('#clavier-jeu'),lo,hi,{noms:niv.mode==='nom'?(niv.aide>=1?'tous':'do'):(niv.aide>=2?'tous':niv.aide===1?'do':'do'),onNote:(m)=>{ecoute.ignorer(900);recu(m);}});
   $('#prog').style.width='0%';$('#score').textContent='0';$('#combo').textContent='';
   $('#consigne').textContent=mode==='defi'?'Joue chaque note avant qu\'elle atteigne la ligne.':'Joue la note. Prends ton temps.';
@@ -707,13 +730,13 @@ function nouvelleNote(){
   G.calque.append(note.el);G.notes.push(note);G.crees++;majIndice();
 }
 function dessinerNote(note){
-  const niv=G.niv,aide=note.indice?2:niv.aide;
-  note.inner.innerHTML=G.geo.nom?bulleSVG(note.d,125,{couleur:aide>=1}):noteSVG(note.d,note.p,{couleur:aide>=1,nom:aide>=2});
+  const niv=G.niv,aide=note.indice?2:niv.aide,nom=note.indice||(aide>=2&&G.mode==='pratique');
+  note.inner.innerHTML=G.geo.nom?bulleSVG(note.d,125,{couleur:aide>=2}):noteSVG(note.d,note.p,{couleur:aide>=2,nom});
 }
 const cible=()=>G.notes.find(n=>n.etat==='vient');
 function majIndice(){
   const c=cible();if(!clavJeu)return;
-  if(!c||(G.niv.aide<2&&!c.indice)){clavJeu.indice([]);return;}
+  if(!c||((G.niv.aide<2||G.mode==='defi')&&!c.indice)){clavJeu.indice([]);return;}
   const ms=Object.keys(clavJeu.touches).map(Number).filter(m=>G.niv.oct==='any'?((m%12)===SEMI[c.d%7]):m===midiDe(c.d));
   clavJeu.indice(ms);
 }
@@ -731,24 +754,26 @@ function recu(m){
     noter(G.niv,c.d,true,reaction);
     const mult=1+Math.min(4,Math.floor(G.combo/5))*.5;
     const frac=G.mode==='defi'?Math.max(0,(c.x-G.HIT)/(G.X0-G.HIT)):Math.max(0,1-reaction/6000);
+    if(G.mode==='defi'){ if(!c.err&&frac>.45&&++G.rapides>=3){G.adapt=Math.min(1.6,G.adapt*1.1);G.rapides=0;} }
     const pts=Math.round((100+100*frac)*mult*(c.err?.5:1));G.score+=pts;
     c.inner.style.transformOrigin=`0px ${yDe(c)}px`;c.inner.classList.add('n-ok');
     const t=svgEl('text',{x:c.x,y:yDe(c)-30,'text-anchor':'middle',class:'points'});t.textContent='+'+pts;G.fx.append(t);setTimeout(()=>t.remove(),800);
     clavJeu&&clavJeu.flash(m,'joue-ok');sonOk();
     setTimeout(()=>c.el.remove(),460);
-    if(G.combo%5===0) encourager(PHRASES_COMBO[Math.min(3,G.combo/5-1)],'wow');
-    else if(Math.random()<.18) encourager(PHRASES_OK[Math.floor(Math.random()*PHRASES_OK.length)]);
+    if(G.combo%5===0) encourager(`${G.combo} notes justes de suite`,'wow');
+    else if(Math.random()<.25) encourager(explication(c.d)+'. Bien lu.');
     if(G.mode==='pratique'){ if(G.crees<G.total) setTimeout(()=>G&&!G.fin&&nouvelleNote(),420); }
     majHud();majIndice();verifierFin();
   } else {
-    c.err++;G.erreurs++;if(c.err===1){noter(G.niv,c.d,false,0);G.revoir[c.d]=1;}G.combo=0;
+    c.err++;G.erreurs++;G.adapt=Math.max(.6,G.adapt*.88);G.rapides=0;if(c.err===1){noter(G.niv,c.d,false,0);G.revoir[c.d]=1;}G.combo=0;
     c.inner.classList.remove('n-secoue');void c.inner.getBBox;requestAnimationFrame(()=>c.inner.classList.add('n-secoue'));
     setTimeout(()=>c.inner.classList.remove('n-secoue'),360);
     clavJeu&&clavJeu.flash(m,'joue-non');sonNon();
     const dj=dDeMidi(m);
     if(!G.geo.nom&&dj!==null&&Math.abs(dj-c.d)<=12){const p=c.p;const g=svgEl('g',{transform:`translate(${c.x+34},0)`,class:'fantome'},noteSVG(dj,p,{queue:false}).replace(/fill="var\(--staff\)"/g,'fill="var(--bad)"'));G.fx.append(g);setTimeout(()=>g.remove(),900);}
-    if(G.mode==='pratique'&&c.err>=2&&!c.indice){c.indice=true;dessinerNote(c);majIndice();encourager('Regarde l\'indice. Ça arrive à tout le monde !');}
-    else if(c.err===1&&Math.random()<.5) encourager(G.mode==='pratique'?'Presque ! Essaie encore.':'Pas grave, continue !','triste');
+    const montrer=G.mode==='defi'||c.err>=2;
+    if(montrer&&!c.indice){c.indice=true;dessinerNote(c);majIndice();}
+    encourager(montrer?`C'est ${explication(c.d)}.`:`Tu as joué ${NOMS12[((m%12)+12)%12]}. Regarde le repère le plus proche.`,'triste');
     majHud();
   }
 }
@@ -761,11 +786,11 @@ function boucle(ts){
   const dt=Math.min(.05,(ts-G.dernier)/1000);G.dernier=ts;G.t+=dt;
   if(G.mode==='defi'){
     const actives=G.notes.filter(n=>n.etat==='vient');
-    if(G.crees<G.total&&(G.t>=G.prochain||!actives.length)){ const der=actives[actives.length-1]; if(!der||der.x<G.X0-130){nouvelleNote();G.prochain=G.t+G.ecart;} }
-    const v=G.vitesse*(1+G.faits/G.total*.18);
+    if(G.crees<G.total&&(G.t>=G.prochain||!actives.length)){ const der=actives[actives.length-1]; if(!der||der.x<G.X0-130){nouvelleNote();G.prochain=G.t+G.ecart/G.adapt;} }
+    const v=G.vitesse*G.adapt;
     for(const n of G.notes){ if(n.etat==='rate'||n.etat==='vient'){ n.x-=v*dt; n.el.setAttribute('transform',`translate(${n.x.toFixed(1)},0)`); } }
     const c=cible();
-    if(c&&c.x<=G.HIT-20){ c.etat='rate';G.faits++;G.combo=0;if(!c.err)noter(G.niv,c.d,false,0);G.revoir[c.d]=1;c.inner.classList.add('n-rate');setTimeout(()=>c.el.remove(),700);sonNon();majHud();majIndice();verifierFin(); }
+    if(c&&c.x<=G.HIT-20){ c.etat='rate';G.faits++;G.combo=0;G.adapt=Math.max(.6,G.adapt*.88);G.rapides=0;if(!c.err)noter(G.niv,c.d,false,0);G.revoir[c.d]=1;c.inner.classList.add('n-rate');setTimeout(()=>c.el.remove(),700);sonNon();encourager(`C'était ${explication(c.d)}.`,'triste');majHud();majIndice();verifierFin(); }
   }
   requestAnimationFrame(boucle);
 }
