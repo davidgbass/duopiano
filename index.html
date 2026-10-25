@@ -76,7 +76,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance
 .banniere .eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;font-weight:700}
 .banniere h2{font-size:24px}
 .banniere p{margin:2px 0 0;opacity:.9;font-size:15px}
-.banniere.u1{background:#E5484D}.banniere.u2{background:#0A98B0}.banniere.u3{background:#2E9E57}.banniere.u4{background:#5B3FD6}
+.banniere.u1{background:#E5484D}.banniere.u2{background:#0A98B0}.banniere.u3{background:#D9670A}.banniere.u4{background:#2E9E57}.banniere.u5{background:#5B3FD6}
 .banniere{color:#fff}
 .sentier{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;padding:22px 0 8px}
 .noeud{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;padding:0;width:150px}
@@ -125,6 +125,18 @@ h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance
 /* Jeu */
 #jeu,#tuto{display:flex;flex-direction:column;height:100%;padding-block:8px 10px;gap:10px}
 #tuto[hidden]{display:none!important}
+#quiz{display:flex;flex-direction:column;height:100%;padding-block:8px 10px;gap:14px}
+#quiz[hidden]{display:none!important}
+.q-carte{background:var(--board);border:1px solid var(--line);border-radius:20px;padding:14px;display:grid;gap:6px;justify-items:center}
+.q-texte{font-size:clamp(22px,3vw,30px);text-align:center}
+#q-svg{width:100%;max-width:900px;max-height:34vh;height:auto}
+.q-choix{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;max-width:760px;width:100%;margin:0 auto}
+.q-btn{min-height:84px;font-size:22px;display:grid;place-items:center}
+.q-btn.ok{background:var(--ok);color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--ok) 70%,#000)}
+.q-btn.non{background:var(--bad-soft);color:var(--bad);opacity:.8}
+.q-retour{display:flex;align-items:center;gap:10px;justify-content:center;opacity:0;transition:opacity .2s;min-height:56px}
+.q-retour.vu{opacity:1}
+.q-retour .dit{background:var(--accent-soft);border-radius:14px;padding:8px 14px;font-weight:700}
 .t-titre{display:flex;flex-direction:column;line-height:1.15;min-width:0;margin-right:auto}
 .t-titre .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .t-titre b{font-family:var(--f-display);font-size:20px}
@@ -276,6 +288,19 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <div class="clavier" id="clavier-jeu"></div>
 </section>
 
+<!-- QUIZ RYTHME -->
+<section id="quiz" class="ecran" hidden>
+  <div class="hud">
+    <button class="fermer" id="q-quitter" aria-label="Quitter la pratique">×</button>
+    <div class="prog" aria-hidden="true"><i id="q-prog"></i></div>
+    <div class="combo" id="q-combo"></div>
+    <div class="score" id="q-score">0</div>
+  </div>
+  <div class="q-carte"><h2 class="q-texte" id="q-texte"></h2><svg id="q-svg" preserveAspectRatio="xMidYMid meet"></svg></div>
+  <div class="q-choix" id="q-choix"></div>
+  <div class="q-retour" id="q-retour"><span id="q-masc"></span><div class="dit" id="q-dit"></div></div>
+</section>
+
 <!-- TUTORIEL -->
 <section id="tuto" class="ecran" hidden>
   <div class="hud">
@@ -285,7 +310,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <button class="btn petit" id="t-passer">Passer</button>
   </div>
   <div class="scene" id="t-scene"><svg class="planche" id="t-planche" preserveAspectRatio="xMidYMid meet"></svg><div class="mot" id="t-mot" hidden></div></div>
-  <div class="t-sous"><span id="t-masc"></span><div class="t-dit" id="t-dit" aria-live="polite"></div><button class="btn petit" id="t-skip" hidden>Je passe</button></div>
+  <div class="t-sous" id="t-sous"><span id="t-masc"></span><div class="t-dit" id="t-dit" aria-live="polite"></div><button class="btn petit" id="t-skip" hidden>Je passe</button></div>
   <div class="clavier" id="t-clavier"></div>
 </section>
 
@@ -357,6 +382,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <li>La méthode suit l'ordre des méthodes Faber et Alfred : le clavier d'abord, puis trois notes repères (le Do central, le Sol de la clé de sol, le Fa de la clé de fa), puis la lecture par pas et par sauts à partir de ces repères.</li>
         <li>Les couleurs et les noms sur les notes sont des aides qui disparaissent au fil des niveaux. C'est voulu : l'enfant apprend à lire la position, pas la couleur.</li>
         <li>Un niveau s'ouvre avec 2 étoiles, soit 80 % de notes justes du premier coup dans le défi. Si ça bloque, la pratique sans chrono et la révision aident.</li>
+        <li>L'unité « Les valeurs de notes » est ouverte dès le départ. On peut alterner entre la lecture des notes et le rythme. Dans le défi de rythme, n'importe quelle touche compte : on vérifie seulement le moment où la note commence.</li>
         <li>Chaque niveau commence par un tutoriel animé de moins d'une minute, qui se termine par une note à jouer. On peut le revoir depuis la fiche du niveau.</li>
         <li>Les doigts comptent aussi : pouce sur le Do, un doigt par touche, poignet souple.</li>
       </ul>
@@ -373,6 +399,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <div id="toast" class="toast" hidden></div>
 
 <script src="tutos.js"></script>
+<script src="rythme.js"></script>
 <script>
 'use strict';
 /* ---------- Notes ---------- */
@@ -414,7 +441,21 @@ const UNITES=[
   {id:'s7',titre:'Tout en haut',mode:'portee',cle:'sol',ds:plage('C5','G5'),aide:1,sec:8.5,
    lecon:{type:'portee',cle:'sol',notes:['C5','D5','E5','F5','G5'],rep:['C5'],txt:['Après Mi, il y a Fa, sur la ligne du haut.','Puis Sol, juste au-dessus de la portée.','Pars du Do aigu et monte par pas.'],dit:'On touche le plafond de la portée !'}},
  ]},
- {num:3,titre:'La clé de fa',sous:'La main gauche lit la portée du bas',niveaux:[
+ {num:3,titre:'Les valeurs de notes',sous:'Combien de temps dure chaque note. Cette unité est ouverte dès le départ.',niveaux:[
+  {id:'r1',titre:'Noire et blanche',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b'],nouv:['n','b'],chiffres:[4],bpm:66,aide:2,sec:8,
+   lecon:{type:'rythme',m:'n n b | b n n',c:4,txt:['La noire a une tête pleine et une tige. Elle dure 1 temps.','La blanche a une tête vide. Elle dure 2 temps.','Le 4 en haut veut dire 4 temps par mesure.'],dit:'Noire, noire, blanche : un, deux, trois, quatre.'}},
+  {id:'r2',titre:'La ronde',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','r'],nouv:['r'],chiffres:[4],bpm:66,aide:2,sec:8,
+   lecon:{type:'rythme',m:'r | b b',c:4,txt:['La ronde est une tête vide, sans tige.','Elle dure 4 temps : toute une mesure à 4 temps.','Une ronde vaut deux blanches, ou quatre noires.'],dit:'La ronde, c\'est la plus longue.'}},
+  {id:'r3',titre:'La blanche pointée',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','bp','r'],nouv:['bp'],chiffres:[3,4],bpm:66,aide:2,sec:8,
+   lecon:{type:'rythme',m:'bp | n b',c:3,txt:['Le point après une note l\'allonge de la moitié.','La blanche pointée dure 3 temps.','Le 3 en haut veut dire 3 temps par mesure.'],dit:'Deux temps, plus la moitié : trois temps.'}},
+  {id:'r4',titre:'Les silences',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','bp','r','s','dp','p'],nouv:['s','dp','p'],chiffres:[4],bpm:66,aide:2,sec:8,
+   lecon:{type:'rythme',m:'n s n s | b dp',c:4,txt:['Un silence, c\'est un temps où on ne joue pas. On compte quand même.','Le soupir dure 1 temps. La demi-pause dure 2 temps, posée sur la ligne du milieu.','La pause dure toute la mesure. Elle pend sous la quatrième ligne.'],dit:'Chut ! Les silences comptent aussi.'}},
+  {id:'r5',titre:'Les croches',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','bp','r','s','dp','p','cc'],nouv:['cc'],chiffres:[4,3],bpm:60,aide:2,sec:8,
+   lecon:{type:'rythme',m:'cc cc b | n cc n n',c:4,txt:['Les croches vont souvent par deux, attachées par une barre.','Deux croches durent 1 temps ensemble.','On compte : un et, deux et.'],dit:'Deux sons dans un seul temps.'}},
+  {id:'r6',titre:'Les mesures',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','bp','r','s','dp','p','cc'],nouv:[],chiffres:[2,3,4],bpm:66,aide:2,sec:8,
+   lecon:{type:'rythme',m:'n n | b',c:2,txt:['Le chiffre du haut dit combien de temps il y a dans chaque mesure.','Les barres de mesure séparent les mesures.','Pour vérifier une mesure, additionne les temps.'],dit:'Deux, trois ou quatre temps : compte, et tu sauras.'}},
+ ]},
+ {num:4,titre:'La clé de fa',sous:'La main gauche lit la portée du bas',niveaux:[
   {id:'f1',titre:'Le repère Fa',mode:'portee',cle:'fa',ds:plage('F3','A3'),aide:2,sec:11,
    lecon:{type:'portee',cle:'fa',notes:['F3','G3','A3'],rep:['F3'],txt:['La clé de fa a deux points. Entre les deux points passe la quatrième ligne : c\'est Fa.','Un pas plus haut, Sol. Encore un pas, La.','Ces notes se jouent avec la main gauche.'],dit:'Les deux points de la clé montrent le Fa.'}},
   {id:'f1b',titre:'Jusqu\'au Do central',mode:'portee',cle:'fa',ds:plage('F3','C4'),aide:1,sec:10,
@@ -428,7 +469,7 @@ const UNITES=[
   {id:'f5',titre:'Le Fa grave',mode:'portee',cle:'fa',ds:plage('F2','C3'),aide:1,sec:8.5,
    lecon:{type:'portee',cle:'fa',notes:['F2','G2','A2','B2','C3'],rep:['F2','G2'],txt:['Sous la ligne du bas, il y a encore une note : Fa.','C\'est un Fa, comme celui de la clé, mais plus grave.','Pars du Sol grave et descends d\'un pas.'],dit:'La note la plus grave du jeu !'}},
  ]},
- {num:4,titre:'La grande portée',sous:'Les deux mains, les deux clés',niveaux:[
+ {num:5,titre:'La grande portée',sous:'Les deux mains, les deux clés',niveaux:[
   {id:'g1',titre:'Les deux portées',mode:'portee',cle:'grand',ds:plage('C3','C5'),aide:1,sec:8.5,
    lecon:{type:'portee',cle:'grand',notes:['C3','F3','C4','G4','C5'],rep:['C3','F3','C4','G4','C5'],txt:['La clé de sol en haut, la clé de fa en bas : c\'est la grande portée.','Les deux portées se touchent au Do central.','Regarde d\'abord la clé, puis la position.'],dit:'Deux clés, cinq repères.'}},
   {id:'g2',titre:'Toute la grande portée',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:7.5,
@@ -438,6 +479,7 @@ const UNITES=[
  ]},
 ];
 const NIVEAUX=UNITES.flatMap(u=>u.niveaux.map(n=>(n.unite=u,n)));
+NIVEAUX.forEach((n,i)=>{const piste=x=>x.mode==='rythme'?'r':'n';for(let j=i-1;j>=0;j--)if(piste(NIVEAUX[j])===piste(n)){n.prereq=NIVEAUX[j].id;break;}});
 NIVEAUX.forEach((n,i)=>{const meme=NIVEAUX.slice(0,i).filter(a=>a.mode===n.mode&&(n.cle==='grand'||a.cle===n.cle));
   n.anciens=[...new Set(meme.flatMap(a=>a.ds))].filter(d=>!n.ds.includes(d));});
 
@@ -459,7 +501,7 @@ function ajouterXP(n){const p=P(),j=auj();p.xp[j]=(p.xp[j]||0)+n;
   if(p.dernierJour!==j){p.serie=(p.dernierJour===hier()?p.serie:0)+1;p.dernierJour=j;}
   const cles=Object.keys(p.xp).sort();while(cles.length>60)delete p.xp[cles.shift()];sauver();}
 const etoilesTot=()=>Object.values(P().etoiles).reduce((a,b)=>a+b,0);
-function ouvert(i){ if(R().ouvert||i===0) return true; return (P().etoiles[NIVEAUX[i-1].id]||0)>=2; }
+function ouvert(i){ const n=NIVEAUX[i]; if(R().ouvert||!n.prereq) return true; return (P().etoiles[n.prereq]||0)>=2; }
 
 /* ---------- Petits outils ---------- */
 const $=(s,r=document)=>r.querySelector(s);
@@ -525,7 +567,7 @@ const ecoute={actif:false,histo:[],stable:{m:null,n:0},arme:true,silence:0,ignor
     let s=0;for(let i=this.buf.length-2048;i<this.buf.length;i++)s+=this.buf[i]*this.buf[i];
     const rms=Math.sqrt(s/2048),now=performance.now(),seuil=R().seuil,h=this.histo,ignore=now<this.ignoreJusqua;
     const mini=h.length?Math.min(...h):rms;h.push(rms);if(h.length>8)h.shift();
-    if(rms>seuil*1.4&&rms>mini*1.7){ if(!ignore){this.arme=true;} this.stable={m:null,n:0}; }
+    if(rms>seuil*1.4&&rms>mini*1.7){ if(!ignore){this.arme=true; if(now-(this.derAtt||0)>130){this.derAtt=now;this.onAttaque&&this.onAttaque(now-25);}} this.stable={m:null,n:0}; }
     let m=null,f=null;
     if(rms>=seuil){ const r=yin(this.buf,this.sr); if(r){ f=r.f; const mf=69+12*Math.log2(f/440),mr=Math.round(mf); if(Math.abs(mf-mr)<.42&&mr>=40&&mr<=88) m=mr; } this.silence=0; }
     else { if(!this.silence) this.silence=now; else if(now-this.silence>160&&!ignore) this.arme=true; }
@@ -599,7 +641,7 @@ function bornesClavier(ds,mode){
 }
 
 /* ---------- Navigation ---------- */
-const ECRANS=['accueil','tuto','jeu','resultats','micro','notes','reglages'];
+const ECRANS=['accueil','tuto','quiz','jeu','resultats','micro','notes','reglages'];
 function montrer(id){ ECRANS.forEach(e=>$('#'+e).hidden=e!==id); window.scrollTo(0,0); if(id!=='micro'&&id!=='jeu') ecoute.onTrame=null; }
 document.querySelectorAll('[data-retour]').forEach(b=>b.onclick=()=>{ if(!$('#micro').hidden) arreterTestMicro(); accueil(); });
 
@@ -631,7 +673,7 @@ function accueil(){
       b.setAttribute('aria-label',`${n.titre}${o?'':' (verrouillé)'}`);
       b.innerHTML=`${i===courant?'<span class="bulle-go">Commencer</span>':''}<span class="rond">${o?(et===3?'★':i+1):'<svg width="26" height="28" viewBox="0 0 26 28"><rect x="3" y="12" width="20" height="15" rx="4" fill="currentColor"/><path d="M7 12V8a6 6 0 0 1 12 0v4" stroke="currentColor" stroke-width="3.4" fill="none"/></svg>'}</span>
         <span class="nom">${n.titre}</span><span class="etoiles">${o?etoilesTxt(et):''}</span>`;
-      b.onclick=()=>{ if(!o){toast('Gagne 2 étoiles au niveau précédent pour ouvrir celui-ci.');return;} if(window.TUTOS&&TUTOS[n.id]&&!(P().tutos||{})[n.id]) lancerTuto(i); else ouvrirLecon(i); };
+      b.onclick=()=>{ if(!o){toast('Gagne 2 étoiles au niveau précédent de ce chemin pour ouvrir celui-ci.');return;} ouvrirNiveau(i); };
       sent.append(b);});
     sec.append(sent);ch.append(sec);
   }
@@ -658,6 +700,12 @@ $('#b-reglages').onclick=()=>reglages();
 
 /* ---------- Feuille de leçon ---------- */
 function illustration(l){
+  if(l.type==='rythme'){
+    const ms=lireRythme(l.m),w=Math.max(420,110+largeurRythme(ms,l.c,60));
+    const svg=svgEl('svg',{viewBox:`0 40 ${w} 160`,style:`width:100%;min-width:${Math.min(w,520)}px;height:auto;display:block`});
+    dessinerPortee(svg,geom('sol'),4,w-4);const r=rythmeSVG(ms,{c:l.c,x0:100,bw:60,chiffre:true,barreFin:true});
+    const g=svgEl('g');g.innerHTML=r.h;svg.append(g);illustration.ry={svg,r};const wrap=document.createElement('div');wrap.append(svg);return wrap;
+  }
   if(l.type==='clavier'){
     const div=document.createElement('div');div.className='clavier';div.style.height='120px';
     const k=clavier(div,48,71,{noms:'tous'});k.indice(l.surl.flatMap(s=>{const d=dDe(s);return [midiDe(d)];}));
@@ -670,6 +718,7 @@ function illustration(l){
   l.notes.forEach((s,i)=>{const d=dDe(s),p=porteePour(geo,d);const g=svgEl('g',{transform:`translate(${130+i*((w-170)/Math.max(1,l.notes.length-1))},0)`},noteSVG(d,p,{couleur:true,nom:true,repere:l.rep.includes(s)}));svg.append(g);});
   const wrap=document.createElement('div');wrap.append(svg);return wrap;
 }
+function ouvrirNiveau(i){ const n=NIVEAUX[i]; if(window.TUTOS&&TUTOS[n.id]&&!(P().tutos||{})[n.id]) lancerTuto(i); else ouvrirLecon(i); }
 function ouvrirLecon(i){
   const n=NIVEAUX[i],l=n.lecon,v=$('#voile'),et=P().etoiles[n.id]||0,best=P().meilleur[n.id]||0;
   v.innerHTML='';const f=document.createElement('div');f.className='feuille';f.setAttribute('role','dialog');f.setAttribute('aria-label',n.titre);
@@ -677,13 +726,14 @@ function ouvrirLecon(i){
    <h2>${n.titre}</h2><div class="illus" id="illus"></div>
    <ol class="lecon-txt">${l.txt.map((t,k)=>`<li><b class="num">${k+1}</b><span>${t}</span></li>`).join('')}</ol>
    <div class="dialogue">${mascotte(52)}<div class="dit">${l.dit}</div></div>
-   <div class="rangee" style="margin:10px 0 14px">${window.TUTOS&&TUTOS[n.id]?'<button class="btn petit" id="b-tuto">Revoir le tutoriel</button>':''}<button class="btn petit" id="b-ecoute">Écouter ces notes</button>
+   <div class="rangee" style="margin:10px 0 14px">${window.TUTOS&&TUTOS[n.id]?'<button class="btn petit" id="b-tuto">Revoir le tutoriel</button>':''}<button class="btn petit" id="b-ecoute">${n.mode==='rythme'?'Écouter ce rythme':'Écouter ces notes'}</button>
      <span style="color:var(--muted);margin-left:auto">Défi : <span class="etoiles">${etoilesTxt(et)}</span>${best?` · record ${best}`:''}</span></div>
-   <div class="choix"><button class="btn" id="b-prat">Pratique<small>12 notes, sans chrono</small></button><button class="btn prim" id="b-defi">Défi<small>${n.n||15} notes qui défilent</small></button></div>`;
+   <div class="choix"><button class="btn" id="b-prat">Pratique<small>${n.mode==='rythme'?'12 questions':'12 notes, sans chrono'}</small></button><button class="btn prim" id="b-defi">Défi<small>${n.mode==='rythme'?'4 lignes à lire et jouer':(n.n||15)+' notes qui défilent'}</small></button></div>`;
   v.append(f);v.hidden=false;$('#illus').append(illustration(l));
   const fermer=()=>{v.hidden=true;v.innerHTML='';};
   f.querySelector('.fermer').onclick=fermer;v.onclick=e=>{if(e.target===v)fermer();};
-  $('#b-ecoute').onclick=()=>{const ms=(l.type==='clavier'?l.surl:l.notes).map(s=>midiDe(dDe(s)));ms.forEach((m,k)=>setTimeout(()=>jouerNote(m,.7),k*420));};
+  $('#b-ecoute').onclick=()=>{ if(l.type==='rythme'){const {svg,r}=illustration.ry;animerRythme(svg,r,{bpm:n.bpm});return;}
+    const ms=(l.type==='clavier'?l.surl:l.notes).map(s=>midiDe(dDe(s)));ms.forEach((m,k)=>setTimeout(()=>jouerNote(m,.7),k*420));};
   if($('#b-tuto'))$('#b-tuto').onclick=()=>{fermer();lancerTuto(i);};
   $('#b-prat').onclick=()=>{fermer();lancer(n,'pratique');};
   $('#b-defi').onclick=()=>{fermer();lancer(n,'defi');};
@@ -711,7 +761,7 @@ async function lancerTuto(i){
   montrer('tuto');audio();garderEcran();
   $('#t-titre').textContent=n.titre;$('#t-masc').innerHTML=mascotte(56);$('#t-skip').hidden=true;$('#t-mot').hidden=true;
   $('#t-points').innerHTML=etapes.map(()=>'<i></i>').join('');
-  const geo=n.mode==='nom'?{H:250,nom:true}:geom(n.cle);T.geo=geo;
+  const geo=n.mode==='nom'?{H:250,nom:true}:geom(n.cle);T.geo=geo;T.rythme=n.mode==='rythme';
   const rc=$('#t-scene').getBoundingClientRect();
   const W=Math.round(Math.max(440,Math.min(1000,geo.H*1.15*(rc.width/Math.max(1,rc.height)))));T.W=W;
   const svg=$('#t-planche');svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${W} ${geo.H}`);
@@ -732,7 +782,7 @@ async function lancerTuto(i){
 }
 function finTuto(){
   if(!T) return; const {n,i}=T; T.annule=true; try{T.source&&T.source.stop();}catch(e){}
-  if(T.attente) T.attente.res(); T=null;
+  if(T.attente) T.attente.res(); if(T.boite) T.boite.remove(); T=null;
   ecoute.onNote=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){}
   const p=P();(p.tutos||(p.tutos={}))[n.id]=true;sauver();
   accueil();ouvrirLecon(i);
@@ -766,11 +816,27 @@ async function jouerEtape(e,k){
           T.bandes.append(svgEl('rect',{class:'bande',x:0,y:y-9,width:T.W,height:18,rx:9})); } await pause(300); }
       else if(a.t==='cle'){ T.cles.forEach(c=>{c.classList.remove('cle-pulse');void c.getBBox();c.classList.add('cle-pulse');}); await pause(300); }
       else if(a.t==='efface'){ T.calque.innerHTML='';T.slot=0; }
+      else if(a.t==='rythme'){ const ms=lireRythme(a.m),c=a.c||ms[0].reduce((s,t)=>s+dureeTok(t,4),0),bw=Math.min(90,(T.W-200)/Math.max(1,ms.length*c));
+        T.calque.innerHTML='';const r=rythmeSVG(ms,{c,x0:a.c?110:Math.max(110,T.W/2-ms.length*c*bw/2-40),bw,chiffre:!!a.c,barreFin:ms.length>1});T.calque.innerHTML=r.h;T.ry=r;T.ryBpm=a.bpm||T.n.bpm||66;await pause(500); }
+      else if(a.t==='compte'){ await voix; await animerRythme($('#t-planche'),T.ry,{bpm:T.ryBpm,annule:()=>!T||T.annule}); if(!T||T.annule) throw 'annule'; }
+      else if(a.t==='toiQ'){ await voix; await tutoQuestion(a); }
     }
   })();
   await Promise.all([voix,actions]);
   if(!T||T.annule) throw 'annule';
   await pause(350);
+}
+async function tutoQuestion(a){
+  const box=document.createElement('div');box.className='rangee';box.style.justifyContent='flex-end';
+  $('#t-dit').textContent=a.q;
+  const ok=await new Promise(res=>{ T.attente={res};
+    a.choix.forEach(ch=>{const b=document.createElement('button');b.className='btn petit';b.textContent=ch;
+      b.onclick=()=>{ if(ch===a.rep){b.classList.add('prim');sonOk();res(true);} else {b.disabled=true;sonNon();$('#t-dit').textContent=a.expl||'Essaie encore.';} };box.append(b);});
+    $('#t-sous').append(box);T.boite=box; });
+  if(T&&T.boite){T.boite.remove();T.boite=null;}
+  if(!T||T.annule) throw 'annule';
+  T.attente=null;
+  if(ok){ $('#t-dit').textContent='Bravo !';$('#t-masc').innerHTML=mascotte(56,'wow');await pause(1200); }
 }
 async function tutoToi(code){
   const d=dDe(code);
@@ -783,7 +849,7 @@ async function tutoToi(code){
   if(ok){ $('#t-dit').textContent='Bravo ! C\'est bien '+nomD(d)+'.';$('#t-masc').innerHTML=mascotte(56,'wow');await pause(1400); }
 }
 function tutoRecu(m){
-  if(!T||!T.attente) return;
+  if(!T||!T.attente||T.attente.d==null) return;
   const a=T.attente,ok=(T.n.oct==='any'||!R().octave)?(((m%12)+12)%12===SEMI[a.d%7]):m===midiDe(a.d);
   if(ok){ T.clav.flash(m,'joue-ok',600); sonOk(); a.res(true); return; }
   a.err++; T.clav.flash(m,'joue-non'); sonNon();
@@ -826,6 +892,7 @@ function explication(d){
   return `${nomD(d)} : ${pas} ${k>0?'au-dessus':'sous'} le ${best[1]}`;
 }
 function lancer(niv,mode){
+  if(niv.mode==='rythme') return mode==='defi'?lancerLecture(niv):lancerQuiz(niv);
   const geo=niv.mode==='nom'?{H:250,nom:true}:geom(niv.cle);
   const sc=$('#scene');montrer('jeu');const rc=sc.getBoundingClientRect();
   const W=Math.round(Math.max(440,Math.min(1000,geo.H*1.15*(rc.width/Math.max(1,rc.height)))));
@@ -936,34 +1003,34 @@ function boucle(ts){
   requestAnimationFrame(boucle);
 }
 function verifierFin(){ if(G.faits>=G.total&&!G.fin){ G.fin=true; setTimeout(resultats,650); } }
-function quitter(){ if(G){G.fin=true;} G=null; ecoute.onNote=null; ecoute.onTrame=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){} accueil(); }
-$('#b-quitter').onclick=quitter;
+function quitter(){ if(G){G.fin=true;} G=null; ecoute.onNote=null; ecoute.onTrame=null; ecoute.onAttaque=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){} accueil(); }
+$('#b-quitter').onclick=quitter;$('#q-quitter').onclick=quitter;
 
 /* ---------- Résultats ---------- */
 function resultats(){
   const g=G,niv=g.niv,prec=g.bons/g.total,p=P();
-  ecoute.onNote=null;ecoute.onTrame=null;ecoute.arreter();
+  ecoute.onNote=null;ecoute.onTrame=null;ecoute.onAttaque=null;ecoute.arreter();
   let et=0;if(g.mode==='defi'&&!niv.revision)et=prec>=.95?3:prec>=.8?2:prec>=.65?1:0;
   const avant=p.etoiles[niv.id]||0,i=NIVEAUX.indexOf(niv);
   if(g.mode==='defi'&&!niv.revision){ p.etoiles[niv.id]=Math.max(avant,et); p.meilleur[niv.id]=Math.max(p.meilleur[niv.id]||0,g.score); }
   const xp=Math.max(5,Math.round(g.score/150));ajouterXP(xp);sauver();
-  const ouvreSuivant=i>=0&&i<NIVEAUX.length-1&&avant<2&&(p.etoiles[niv.id]||0)>=2;
+  const suiv=NIVEAUX.findIndex(x=>x.prereq===niv.id);const ouvreSuivant=suiv>=0&&avant<2&&(p.etoiles[niv.id]||0)>=2;
   const titre=g.mode==='pratique'?(prec>=.8?'Belle pratique !':'Bonne pratique !'):et===3?'Parfait !':et===2?'Bravo !':et===1?'Pas mal du tout !':'On réessaie ?';
   const humeur=et>=2||(g.mode==='pratique'&&prec>=.8)?'wow':et===0&&g.mode==='defi'?'triste':'content';
   const sous=g.mode==='pratique'?(niv.revision?'Tes notes difficiles ont été revues.':'Tu es prête ou prêt pour le défi quand tu veux.'):et<2?'Il faut 2 étoiles (80 %) pour ouvrir le niveau suivant. La pratique aide beaucoup.':ouvreSuivant?'Tu as ouvert le niveau suivant !':'Tu peux viser les 3 étoiles.';
-  const revoir=Object.keys(g.revoir).map(Number).sort((a,b)=>a-b);
+  const rythme=niv.mode==='rythme';const revoir=rythme?Object.keys(g.revoir):Object.keys(g.revoir).map(Number).sort((a,b)=>a-b);
   $('#res').innerHTML=`${mascotte(96,humeur)}<h1>${titre}</h1>
    ${g.mode==='defi'&&!niv.revision?`<div class="grosses-etoiles">${[0,1,2].map(k=>`<svg viewBox="0 0 100 100" class="${k<et?'e':''}" style="animation-delay:${k*.25}s;${k<et?'':'transform:none'}"><g fill="${k<et?'var(--gold)':'var(--line)'}">${ETOILE}</g></svg>`).join('')}</div>`:''}
    <p style="margin:0;color:var(--muted);max-width:44ch">${sous}</p>
    <div class="tuiles"><div class="tuile"><b>${g.score}</b><span>Points</span></div><div class="tuile"><b>${Math.round(prec*100)} %</b><span>Du premier coup</span></div><div class="tuile"><b>+${xp}</b><span>XP</span></div></div>
-   ${revoir.length?`<div><div style="font-weight:700;margin-bottom:6px">À revoir</div><div class="revoir">${revoir.map(d=>`<span class="pastille" style="background:${coul(d)}">${niv.oct==='any'?nomD(d):nomLong(d)}</span>`).join('')}</div></div>`:''}
+   ${revoir.length?`<div><div style="font-weight:700;margin-bottom:6px">À revoir</div><div class="revoir">${revoir.map(d=>rythme?`<span class="pastille" style="background:var(--accent)">${VALEURS[d].nom}</span>`:`<span class="pastille" style="background:${coul(d)}">${niv.oct==='any'?nomD(d):nomLong(d)}</span>`).join('')}</div></div>`:''}
    <div class="rangee" style="justify-content:center"><button class="btn" id="r-carte">Retour au chemin</button><button class="btn" id="r-encore">Rejouer</button>
    ${g.mode==='pratique'&&!niv.revision?'<button class="btn prim" id="r-defi">Passer au défi</button>':''}
    ${ouvreSuivant?'<button class="btn prim" id="r-suiv">Niveau suivant</button>':''}</div>`;
   montrer('resultats');sonFin();
   $('#r-carte').onclick=accueil;$('#r-encore').onclick=()=>niv.revision?lancerRevision():lancer(niv,g.mode);
   if($('#r-defi'))$('#r-defi').onclick=()=>lancer(niv,'defi');
-  if($('#r-suiv'))$('#r-suiv').onclick=()=>{accueil();ouvrirLecon(i+1);};
+  if($('#r-suiv'))$('#r-suiv').onclick=()=>{accueil();ouvrirNiveau(suiv);};
   G=null;
 }
 
