@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#5B3FD6">
+<title>Notes Express</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%235B3FD6'/%3E%3Cellipse cx='26' cy='44' rx='11' ry='8' fill='white' transform='rotate(-20 26 44)'/%3E%3Cpath d='M35 42V12c6 4 12 7 12 15' stroke='white' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fredoka:wght@500;600;700&family=Noto+Music&display=swap">
+<style>
+/* Mise en page : une application plein écran. En haut la barre de progression du joueur,
+   au centre la portée (la feuille posée sur le lutrin), en bas le clavier, comme sur le vrai piano. */
+:root{
+  --bg:#EDF2FC; --surface:#FFFFFF; --surface-2:#F4F6FD; --ink:#17203B; --muted:#56608A; --line:#CFD7EC;
+  --accent:#5B3FD6; --accent-ink:#FFFFFF; --accent-soft:#E7E1FF; --accent-deep:#4229AE;
+  --gold:#F2A900; --flame:#FF6B2C; --ok:#1E9E5A; --ok-soft:#DDF5E8; --bad:#D93848; --bad-soft:#FBE1E4;
+  --board:#FFFFFF; --staff:#27304F; --hit:rgba(91,63,214,.10); --key-w:#FFFFFF; --key-b:#1D2440; --lock:#B9C2DC;
+  --n0:#E5484D; --n1:#EF7A12; --n2:#C99400; --n3:#2E9E57; --n4:#0A98B0; --n5:#4A5FDB; --n6:#9446D0;
+  --f-display:'Fredoka','Trebuchet MS',system-ui,sans-serif;
+  --f-body:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-music:'Noto Music','Apple Symbols','Segoe UI Symbol',serif;
+  --r:18px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#10152A; --surface:#1A2140; --surface-2:#222A4D; --ink:#EEF1FA; --muted:#A7B0CF; --line:#323C66;
+  --accent:#9D8BFF; --accent-ink:#140F33; --accent-soft:#2D2766; --accent-deep:#7B66F0;
+  --ok:#3CC57E; --ok-soft:#173A2A; --bad:#FF6B78; --bad-soft:#40202A;
+  --board:#151B36; --staff:#C9D1EE; --hit:rgba(157,139,255,.14); --key-w:#E9ECF7; --key-b:#0A0E1E; --lock:#46507A;
+  --n0:#FF6369; --n1:#FF9A3C; --n2:#F2C230; --n3:#4CC97A; --n4:#2BC4DD; --n5:#7D8EFF; --n6:#C27BFF;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#10152A; --surface:#1A2140; --surface-2:#222A4D; --ink:#EEF1FA; --muted:#A7B0CF; --line:#323C66;
+  --accent:#9D8BFF; --accent-ink:#140F33; --accent-soft:#2D2766; --accent-deep:#7B66F0;
+  --ok:#3CC57E; --ok-soft:#173A2A; --bad:#FF6B78; --bad-soft:#40202A;
+  --board:#151B36; --staff:#C9D1EE; --hit:rgba(157,139,255,.14); --key-w:#E9ECF7; --key-b:#0A0E1E; --lock:#46507A;
+  --n0:#FF6369; --n1:#FF9A3C; --n2:#F2C230; --n3:#4CC97A; --n4:#2BC4DD; --n5:#7D8EFF; --n6:#C27BFF;
+  color-scheme:dark }
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.45;
+  -webkit-tap-highlight-color:transparent;overflow-x:hidden}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance;line-height:1.15}
+.ecran{min-height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 32px}
+.largeur{max-width:980px;margin:0 auto}
+
+/* Boutons */
+.btn{border:0;border-radius:14px;padding:12px 20px;font-family:var(--f-display);font-weight:600;font-size:18px;
+  background:var(--surface);color:var(--ink);box-shadow:0 3px 0 var(--line);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--line)}
+.btn.prim{background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 0 var(--accent-deep)}
+.btn.prim:active{box-shadow:0 0 0 var(--accent-deep)}
+.btn.ok{background:var(--ok);color:#fff;box-shadow:0 4px 0 color-mix(in srgb,var(--ok) 70%,#000)}
+.btn.petit{padding:8px 14px;font-size:15px;border-radius:12px}
+.btn.fantome{background:transparent;box-shadow:none;border:2px solid var(--line)}
+.rangee{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Barre du haut */
+.barre{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-block:6px 14px}
+.marque{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:700;font-size:24px;color:var(--accent);margin-right:auto}
+.puce{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:6px 12px;font-weight:700;
+  font-variant-numeric:tabular-nums;box-shadow:0 2px 0 var(--line);border:0;font-size:15px}
+.puce svg{flex:none}
+.puce .gris{color:var(--muted);font-weight:400}
+
+/* Chemin (carte) */
+.unite{margin-top:18px}
+.banniere{background:var(--accent);color:var(--accent-ink);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.banniere .eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;font-weight:700}
+.banniere h2{font-size:24px}
+.banniere p{margin:2px 0 0;opacity:.9;font-size:15px}
+.banniere.u1{background:#E5484D}.banniere.u2{background:#0A98B0}.banniere.u3{background:#2E9E57}.banniere.u4{background:#5B3FD6}
+.banniere{color:#fff}
+.sentier{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;padding:22px 0 8px}
+.noeud{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;padding:0;width:150px}
+.rond{width:78px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;
+  box-shadow:0 7px 0 var(--accent-deep);font-family:var(--f-display);font-size:28px;font-weight:700;transition:transform .1s}
+.noeud:active .rond{transform:translateY(5px);box-shadow:0 2px 0 var(--accent-deep)}
+.noeud.ferme .rond{background:var(--lock);box-shadow:0 7px 0 color-mix(in srgb,var(--lock) 70%,#000);color:var(--surface)}
+.noeud.fini .rond{background:var(--gold);box-shadow:0 7px 0 #B57E00}
+.noeud.courant .rond{outline:6px solid var(--accent-soft);outline-offset:4px}
+.noeud .nom{font-weight:700;font-size:14px;text-align:center;line-height:1.2}
+.noeud.ferme .nom{color:var(--muted)}
+.etoiles{color:var(--gold);letter-spacing:2px;font-size:16px;line-height:1}
+.etoiles .vide{color:var(--line)}
+.bulle-go{position:absolute;top:-36px;background:var(--surface);color:var(--accent);font-family:var(--f-display);font-weight:700;
+  padding:6px 12px;border-radius:12px;box-shadow:0 3px 0 var(--line);white-space:nowrap;animation:flotte 1.6s ease-in-out infinite}
+.bulle-go::after{content:"";position:absolute;left:50%;bottom:-7px;margin-left:-7px;border:7px solid transparent;border-top-color:var(--surface);border-bottom:0}
+@keyframes flotte{50%{transform:translateY(-5px)}}
+.mascotte-sentier{position:absolute;pointer-events:none}
+
+/* Panneau du jour */
+.jour{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--surface);border-radius:var(--r);padding:16px 18px;box-shadow:0 3px 0 var(--line)}
+.jour .txt{min-width:0}
+.jour h3{font-size:20px}
+.jour p{margin:4px 0 10px;color:var(--muted);font-size:15px}
+.jauge{height:14px;background:var(--surface-2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.jauge>i{display:block;height:100%;background:var(--gold);border-radius:999px;transition:width .5s}
+
+/* Feuille de leçon */
+.voile{position:fixed;inset:0;background:rgba(10,14,30,.45);display:grid;place-items:end center;z-index:20;padding-bottom:env(safe-area-inset-bottom,0px)}
+.feuille{background:var(--surface);width:min(720px,100%);border-radius:24px 24px 0 0;max-height:92%;overflow:auto;
+  padding:22px max(18px,env(safe-area-inset-right,0px)) 24px max(18px,env(safe-area-inset-left,0px));animation:monte .25s ease-out}
+@media (min-width:760px){.voile{place-items:center}.feuille{border-radius:24px}}
+@keyframes monte{from{transform:translateY(40px);opacity:.4}}
+.feuille .eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.feuille h2{font-size:28px;margin:2px 0 12px}
+.lecon-txt{display:grid;gap:8px;margin:12px 0 18px;padding:0;list-style:none}
+.lecon-txt li{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start}
+.lecon-txt li b.num{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--f-display);font-size:15px}
+.illus{background:var(--board);border:1px solid var(--line);border-radius:16px;padding:8px;overflow-x:auto}
+.choix{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choix .btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px}
+.choix .btn small{font-family:var(--f-body);font-weight:400;font-size:14px;opacity:.85}
+.dialogue{display:flex;gap:12px;align-items:flex-end;margin:6px 0 4px}
+.dialogue .dit{background:var(--accent-soft);border-radius:16px 16px 16px 4px;padding:10px 14px;font-weight:700;color:var(--ink)}
+
+/* Jeu */
+#jeu{display:flex;flex-direction:column;height:100%;padding-block:8px 10px;gap:10px}
+.hud{display:flex;align-items:center;gap:12px}
+.hud .prog{flex:1;height:16px;background:var(--surface);border-radius:999px;overflow:hidden;border:1px solid var(--line);min-width:60px}
+.hud .prog>i{display:block;height:100%;width:0;background:var(--ok);border-radius:999px;transition:width .3s}
+.fermer{width:42px;height:42px;border-radius:50%;border:0;background:var(--surface);font-size:22px;line-height:1;display:grid;place-items:center;box-shadow:0 2px 0 var(--line)}
+.score{font-family:var(--f-display);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
+.combo{font-family:var(--f-display);font-weight:700;color:var(--flame);min-width:64px;font-size:18px}
+.scene{position:relative;flex:1;min-height:180px;background:var(--board);border-radius:20px;border:1px solid var(--line);overflow:hidden;display:flex}
+.scene svg.planche{width:100%;height:100%;display:block}
+.info-jeu{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;min-height:36px}
+.entendu{display:flex;align-items:center;gap:8px;font-weight:700;background:var(--surface);padding:6px 12px;border-radius:999px;box-shadow:0 2px 0 var(--line)}
+.entendu .vu{width:46px;height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.entendu .vu i{display:block;height:100%;width:0;background:var(--ok)}
+.consigne{color:var(--muted);font-weight:700}
+.mot{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--f-display);font-weight:700;font-size:64px;color:var(--accent);pointer-events:none}
+.encourage{position:absolute;right:12px;bottom:10px;display:flex;align-items:flex-end;gap:8px;pointer-events:none;max-width:60%}
+.encourage .dit{background:var(--accent-soft);color:var(--ink);font-weight:700;border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:15px}
+.encourage{opacity:0;transition:opacity .25s}
+.encourage.vu{opacity:1}
+
+/* Notes dans le SVG */
+.n-ok{animation:pop .45s ease-out forwards}
+@keyframes pop{40%{transform:scale(1.35)}100%{transform:scale(1.6);opacity:0}}
+.n-rate{animation:tombe .7s ease-in forwards}
+@keyframes tombe{to{transform:translateY(60px);opacity:0}}
+.n-secoue{animation:secoue .35s}
+@keyframes secoue{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.fantome{opacity:.55;animation:efface .9s forwards}
+@keyframes efface{to{opacity:0}}
+.points{font-family:var(--f-display);font-weight:700;font-size:26px;fill:var(--ok);animation:monteP .8s ease-out forwards}
+@keyframes monteP{to{transform:translateY(-40px);opacity:0}}
+.zone-frappe{fill:var(--hit)}
+
+/* Clavier */
+.clavier{position:relative;height:clamp(92px,22vh,170px);user-select:none;-webkit-user-select:none;touch-action:none;flex:none}
+.clavier .blanches{display:flex;height:100%;gap:2px}
+.touche{flex:1;background:var(--key-w);border-radius:0 0 10px 10px;border:1px solid var(--line);border-top:0;position:relative;
+  display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:6px;font-size:13px;font-weight:700;color:#3A4366;box-shadow:inset 0 -6px 0 rgba(0,0,0,.06)}
+.touche.noire{position:absolute;top:0;height:60%;background:var(--key-b);border:0;border-radius:0 0 7px 7px;z-index:2;box-shadow:inset 0 -5px 0 rgba(255,255,255,.12)}
+.touche .pt{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-bottom:3px}
+.touche.indice{background:color-mix(in srgb,var(--c,var(--accent)) 35%,var(--key-w))}
+.touche.noire.indice{background:color-mix(in srgb,var(--c,var(--accent)) 60%,var(--key-b))}
+.touche.joue-ok{background:var(--ok)!important;color:#fff}
+.touche.joue-non{background:var(--bad)!important;color:#fff}
+.touche.joue{background:var(--accent-soft)}
+
+/* Résultats */
+.resultat{max-width:620px;margin:0 auto;text-align:center;display:grid;gap:16px;justify-items:center;padding-top:20px}
+.resultat h1{font-size:36px}
+.grosses-etoiles{display:flex;gap:10px}
+.grosses-etoiles svg{width:70px;height:70px}
+.grosses-etoiles .e{transform:scale(0);animation:apparait .45s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes apparait{to{transform:scale(1)}}
+.tuiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.tuile{background:var(--surface);border-radius:16px;padding:12px 8px;box-shadow:0 3px 0 var(--line)}
+.tuile b{display:block;font-family:var(--f-display);font-size:28px;font-variant-numeric:tabular-nums}
+.tuile span{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.revoir{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pastille{border-radius:999px;padding:4px 12px;font-weight:700;color:#fff}
+
+/* Pages secondaires */
+.page h1{font-size:30px;margin:8px 0 14px}
+.carte{background:var(--surface);border-radius:var(--r);padding:16px 18px;box-shadow:0 3px 0 var(--line);display:grid;gap:12px;margin-bottom:14px}
+.carte h2{font-size:20px}
+.carte p{margin:0;color:var(--muted)}
+.champ{display:grid;gap:6px}
+.champ label{font-weight:700}
+input[type=text]{font:inherit;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--surface-2);color:var(--ink);width:100%}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.segment{display:flex;gap:6px;flex-wrap:wrap}
+.segment button{border:2px solid var(--line);background:var(--surface-2);border-radius:12px;padding:8px 14px;font-weight:700}
+.segment button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.case{display:flex;gap:10px;align-items:flex-start}
+.case input{width:22px;height:22px;accent-color:var(--accent);flex:none;margin-top:2px}
+.micro-grand{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:14px}
+@media (max-width:700px){.micro-grand{grid-template-columns:1fr}}
+.lu{font-family:var(--f-display);font-weight:700;font-size:72px;line-height:1;text-align:center}
+.hz{text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.vumetre{position:relative;height:18px;background:var(--surface-2);border-radius:9px;border:1px solid var(--line);overflow:hidden}
+.vumetre i{position:absolute;inset:0 auto 0 0;background:var(--ok);width:0}
+.vumetre b{position:absolute;top:0;bottom:0;width:3px;background:var(--bad)}
+.grille-notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.fiche-note{background:var(--surface-2);border-radius:14px;padding:6px 6px 8px;text-align:center;border:2px solid transparent}
+.fiche-note svg{width:100%;height:96px;display:block}
+.fiche-note b{display:block;font-size:15px}
+.fiche-note small{font-size:12px;color:var(--muted);font-weight:700}
+.fiche-note.m3{border-color:var(--ok)}.fiche-note.m2{border-color:var(--gold)}.fiche-note.m1{border-color:var(--bad)}
+.legende{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.legende span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:12px 18px;border-radius:14px;font-weight:700;z-index:40;max-width:calc(100% - 32px);text-align:center}
+.conseils{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--ink)}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ACCUEIL : le chemin -->
+<section id="accueil" class="ecran">
+  <div class="largeur">
+    <header class="barre">
+      <div class="marque" aria-label="Notes Express"><span id="logo-masc"></span>Notes Express</div>
+      <button class="puce" id="puce-serie" title="Série de jours"></button>
+      <button class="puce" id="puce-etoiles" title="Étoiles gagnées"></button>
+      <button class="puce" id="puce-profil" title="Changer de joueur"></button>
+    </header>
+    <div class="jour" id="jour"></div>
+    <div class="rangee" style="margin-top:12px">
+      <button class="btn petit" id="b-micro">Tester le micro</button>
+      <button class="btn petit" id="b-notes">Mes notes</button>
+      <button class="btn petit" id="b-reglages">Réglages et parents</button>
+    </div>
+    <div id="chemin"></div>
+  </div>
+</section>
+
+<!-- JEU -->
+<section id="jeu" class="ecran" hidden>
+  <div class="hud">
+    <button class="fermer" id="b-quitter" aria-label="Quitter la leçon">×</button>
+    <div class="prog" aria-hidden="true"><i id="prog"></i></div>
+    <div class="combo" id="combo"></div>
+    <div class="score" id="score">0</div>
+  </div>
+  <div class="scene" id="scene">
+    <svg class="planche" id="planche" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="mot" id="mot" hidden></div>
+    <div class="encourage" id="encourage"><div class="dit" id="encourage-txt"></div><span id="encourage-masc"></span></div>
+  </div>
+  <div class="info-jeu">
+    <div class="consigne" id="consigne"></div>
+    <div class="entendu" id="entendu"><span class="vu"><i id="vu"></i></span><span id="entendu-txt">Micro en attente</span></div>
+  </div>
+  <div class="clavier" id="clavier-jeu"></div>
+</section>
+
+<!-- RÉSULTATS -->
+<section id="resultats" class="ecran" hidden><div class="resultat" id="res"></div></section>
+
+<!-- MICRO -->
+<section id="micro" class="ecran page" hidden>
+  <div class="largeur">
+    <header class="barre"><button class="fermer" data-retour aria-label="Retour">←</button><h1 style="margin:0 auto 0 4px">Tester le micro</h1></header>
+    <div class="micro-grand">
+      <div class="carte">
+        <div class="lu" id="m-note">…</div>
+        <div class="hz" id="m-hz">Appuie sur « Écouter » puis joue une note.</div>
+        <div class="vumetre" title="Volume entendu"><i id="m-vu"></i><b id="m-seuil"></b></div>
+        <div class="rangee"><button class="btn prim" id="m-go">Écouter</button><button class="btn petit" id="m-calib">Mesurer le silence</button></div>
+        <div class="champ"><label for="m-sens">Sensibilité</label><input type="range" id="m-sens" min="1" max="100" step="1"></div>
+      </div>
+      <div class="carte">
+        <div class="illus" style="padding:4px"><svg id="m-portee" viewBox="0 0 400 340" style="width:100%;height:auto;display:block"></svg></div>
+        <ul class="conseils">
+          <li>Pose la tablette ou l'ordinateur sur le lutrin, près des cordes.</li>
+          <li>Joue une seule note à la fois, avec un son franc.</li>
+          <li>La barre verte doit dépasser le trait rouge quand tu joues. Sinon, monte la sensibilité.</li>
+          <li>Si le jeu entend des notes dans le silence, appuie sur « Mesurer le silence ».</li>
+        </ul>
+      </div>
+    </div>
+    <div class="clavier" id="clavier-micro" style="margin-top:14px"></div>
+  </div>
+</section>
+
+<!-- MES NOTES -->
+<section id="notes" class="ecran page" hidden>
+  <div class="largeur">
+    <header class="barre"><button class="fermer" data-retour aria-label="Retour">←</button><h1 style="margin:0 auto 0 4px">Mes notes</h1></header>
+    <div class="carte"><p>Chaque note que tu as rencontrée, avec ce que tu en sais. La révision choisit d'abord les notes en rouge.</p>
+      <div class="legende"><span style="--c:var(--ok)">Je la connais</span><span style="--c:var(--gold)">Presque</span><span style="--c:var(--bad)">À pratiquer</span><span style="--c:var(--line)">À découvrir</span></div>
+    </div>
+    <div class="carte"><h2>Sur le clavier</h2><div class="grille-notes" id="g-clavier"></div></div>
+    <div class="carte"><h2>Sur la portée</h2><div class="grille-notes" id="g-portee"></div></div>
+  </div>
+</section>
+
+<!-- RÉGLAGES -->
+<section id="reglages" class="ecran page" hidden>
+  <div class="largeur">
+    <header class="barre"><button class="fermer" data-retour aria-label="Retour">←</button><h1 style="margin:0 auto 0 4px">Réglages et parents</h1></header>
+    <div class="carte">
+      <h2>Joueurs</h2>
+      <div class="champ"><label for="r-nom">Nom du joueur actif</label><input type="text" id="r-nom" maxlength="20" autocomplete="off"></div>
+      <div class="segment" id="r-profils"></div>
+      <div class="rangee"><button class="btn petit" id="r-ajout">Ajouter un joueur</button><button class="btn petit fantome" id="r-suppr">Retirer ce joueur</button></div>
+    </div>
+    <div class="carte">
+      <h2>Comment on joue</h2>
+      <div class="champ"><label>Entrée des notes</label>
+        <div class="segment" id="r-entree"><button data-v="micro">Piano et micro</button><button data-v="ecran">Clavier à l'écran</button></div></div>
+      <div class="champ"><label>Vitesse des défis</label>
+        <div class="segment" id="r-vitesse"><button data-v="0.75">Lente</button><button data-v="1">Normale</button><button data-v="1.3">Rapide</button></div></div>
+      <label class="case"><input type="checkbox" id="r-octave"><span><b>Exiger la bonne octave sur la portée.</b><br><span style="color:var(--muted)">Décoche si le micro confond souvent un Do avec le Do d'à côté.</span></span></label>
+      <label class="case"><input type="checkbox" id="r-son"><span><b>Sons du jeu</b></span></label>
+      <label class="case"><input type="checkbox" id="r-ouvert"><span><b>Ouvrir tous les niveaux</b><br><span style="color:var(--muted)">Pour un parent qui veut tout essayer.</span></span></label>
+    </div>
+    <div class="carte">
+      <h2>Conseils aux parents</h2>
+      <ul class="conseils">
+        <li>Visez 10 minutes par jour plutôt qu'une heure la fin de semaine. L'objectif du jour est réglé pour ça.</li>
+        <li>La méthode suit l'ordre des méthodes Faber et Alfred : le clavier d'abord, puis trois notes repères (le Do central, le Sol de la clé de sol, le Fa de la clé de fa), puis la lecture par pas et par sauts à partir de ces repères.</li>
+        <li>Les couleurs et les noms sur les notes sont des aides qui disparaissent au fil des niveaux. C'est voulu : l'enfant apprend à lire la position, pas la couleur.</li>
+        <li>Un niveau s'ouvre avec 2 étoiles, soit 85 % de notes justes du premier coup. Si ça bloque, la pratique sans chrono et la révision aident.</li>
+        <li>Les doigts comptent aussi : pouce sur le Do, un doigt par touche, poignet souple.</li>
+      </ul>
+    </div>
+    <div class="carte">
+      <h2>Progression</h2>
+      <p>Les données restent dans ce navigateur, sur cet appareil.</p>
+      <div class="rangee"><button class="btn petit fantome" id="r-reset">Effacer la progression de ce joueur</button></div>
+    </div>
+  </div>
+</section>
+
+<div id="voile" class="voile" hidden></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+'use strict';
+/* ---------- Notes ---------- */
+const LETTRES='CDEFGAB', NOMS=['Do','Ré','Mi','Fa','Sol','La','Si'], SEMI=[0,2,4,5,7,9,11];
+const NOMS12=['Do','Do♯','Ré','Mi♭','Mi','Fa','Fa♯','Sol','Sol♯','La','Si♭','Si'];
+const coul=d=>`var(--n${((d%7)+7)%7})`;
+const dDe=s=>(+s.slice(1))*7+LETTRES.indexOf(s[0]);
+const midiDe=d=>12*(Math.floor(d/7)+1)+SEMI[d%7];
+const dDeMidi=m=>{const i=SEMI.indexOf(((m%12)+12)%12);return i<0?null:(Math.floor(m/12)-1)*7+i;};
+const nomD=d=>NOMS[d%7];
+const plage=(a,b)=>{const r=[];for(let d=dDe(a);d<=dDe(b);d++)r.push(d);return r;};
+function nomLong(d){ if(d===28) return 'Do central'; return NOMS[d%7]+(d>28?' ↑':' ↓'); }
+
+/* ---------- Programme ---------- */
+const UNITES=[
+ {num:1,titre:'Le clavier',sous:'Trouver les notes sans regarder la portée',niveaux:[
+  {id:'k1',titre:'Trouve les Do',mode:'nom',ds:[dDe('C4')],oct:'any',aide:2,sec:10,
+   lecon:{type:'clavier',surl:['C3','C4','C5'],txt:['Les touches noires sont en groupes de 2 et de 3.','Le Do est la touche blanche juste à gauche du groupe de 2 touches noires.','Il y a plusieurs Do sur le piano. Ici, tous les Do comptent.'],dit:'Cherche les deux touches noires. Le Do est juste à côté !'}},
+  {id:'k2',titre:'Do, Ré, Mi',mode:'nom',ds:plage('C4','E4'),oct:'any',aide:2,sec:10,
+   lecon:{type:'clavier',surl:['C4','D4','E4'],txt:['Le groupe de 2 touches noires a trois voisines blanches.','De gauche à droite : Do, Ré, Mi.','Ré est coincé entre les deux touches noires.'],dit:'Ré, c\'est la touche prise en sandwich.'}},
+  {id:'k3',titre:'Fa, Sol, La, Si',mode:'nom',ds:plage('F4','B4'),oct:'any',aide:2,sec:10,
+   lecon:{type:'clavier',surl:['F4','G4','A4','B4'],txt:['Le groupe de 3 touches noires a quatre voisines blanches.','De gauche à droite : Fa, Sol, La, Si.','Fa est juste à gauche du groupe de 3.'],dit:'Après Si, on recommence à Do !'}},
+  {id:'k4',titre:'Les 7 notes',mode:'nom',ds:plage('C4','B4'),oct:'any',aide:1,sec:9,
+   lecon:{type:'clavier',surl:['C4','D4','E4','F4','G4','A4','B4'],txt:['Do Ré Mi Fa Sol La Si, puis on recommence.','Cette fois, le clavier ne t\'aide plus.','Sers-toi des touches noires pour te repérer.'],dit:'Tu connais tout le clavier maintenant.'}},
+ ]},
+ {num:2,titre:'La clé de sol',sous:'La main droite lit la portée du haut',niveaux:[
+  {id:'s1',titre:'Le Do central',mode:'portee',cle:'sol',ds:plage('C4','E4'),aide:2,sec:10,
+   lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4'],rep:['C4'],txt:['Le Do central est au milieu du piano, en face de toi.','Sur la portée, il a sa petite ligne à lui, sous les cinq lignes.','Ré est juste sous la portée. Mi est sur la première ligne.'],dit:'Le Do central, c\'est ta maison. On part toujours de lui.'}},
+  {id:'s2',titre:'La position de Do',mode:'portee',cle:'sol',ds:plage('C4','G4'),aide:2,sec:9,
+   lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4','F4','G4'],rep:['C4'],txt:['Pose le pouce droit sur le Do central. Chaque doigt a sa touche.','Sur la portée, chaque note monte d\'un pas : ligne, interligne, ligne.','Une touche à droite sur le piano, c\'est un pas plus haut sur la portée.'],dit:'Cinq doigts, cinq notes. Facile !'}},
+  {id:'s3',titre:'Le repère Sol',mode:'portee',cle:'sol',ds:plage('E4','B4'),aide:1,sec:8,
+   lecon:{type:'portee',cle:'sol',notes:['E4','F4','G4','A4','B4'],rep:['G4'],txt:['La clé de sol s\'enroule autour de la deuxième ligne. Cette ligne, c\'est Sol.','Un pas plus haut, c\'est La. Un pas plus bas, c\'est Fa.','Les noms ne sont plus écrits. Les couleurs t\'aident encore un peu.'],dit:'Regarde où la clé fait sa boucle.'}},
+  {id:'s4',titre:'Pas et sauts',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:1,sec:8,
+   lecon:{type:'portee',cle:'sol',notes:['C4','E4','G4','B4','D4','F4','A4','C5'],rep:['C4','G4'],txt:['Un pas : de la ligne à l\'interligne. Sur le piano, la touche voisine.','Un saut : de ligne à ligne. Sur le piano, tu sautes une touche.','Pars du repère le plus proche et compte.'],dit:'Ligne, ligne, ligne : ça saute !'}},
+  {id:'s5',titre:'Sans les couleurs',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:0,sec:7,
+   lecon:{type:'portee',cle:'sol',notes:['C4','G4','C5'],rep:['C4','G4','C5'],txt:['Les notes sont toutes noires, comme dans un vrai livre de piano.','Tes repères : le Do central, le Sol de la clé, et le Do du troisième interligne.','Lis la position, puis joue.'],dit:'Tu lis comme une vraie pianiste ou un vrai pianiste.'}},
+  {id:'s6',titre:'Le Do aigu',mode:'portee',cle:'sol',ds:plage('A4','G5'),aide:1,sec:7,
+   lecon:{type:'portee',cle:'sol',notes:['A4','B4','C5','D5','E5','F5','G5'],rep:['C5'],txt:['Le Do aigu est dans le troisième interligne. C\'est un nouveau repère.','Il est une octave plus haut que le Do central : compte 7 touches blanches.','Monte par pas à partir de lui jusqu\'au Sol au-dessus de la portée.'],dit:'On monte tout en haut de la portée.'}},
+ ]},
+ {num:3,titre:'La clé de fa',sous:'La main gauche lit la portée du bas',niveaux:[
+  {id:'f1',titre:'Le repère Fa',mode:'portee',cle:'fa',ds:plage('F3','C4'),aide:2,sec:9,
+   lecon:{type:'portee',cle:'fa',notes:['F3','G3','A3','B3','C4'],rep:['F3','C4'],txt:['La clé de fa a deux points. Entre les deux points passe la quatrième ligne : c\'est Fa.','Le Do central apparaît aussi ici, sur sa petite ligne au-dessus de la portée.','De Fa, monte par pas jusqu\'au Do central.'],dit:'Les deux points de la clé montrent le Fa.'}},
+  {id:'f2',titre:'Main gauche en Do',mode:'portee',cle:'fa',ds:plage('C3','G3'),aide:1,sec:8,
+   lecon:{type:'portee',cle:'fa',notes:['C3','D3','E3','F3','G3'],rep:['C3','F3'],txt:['Le Do grave est dans le deuxième interligne de la clé de fa.','Pose le petit doigt gauche dessus. Chaque doigt a sa touche jusqu\'à Sol.','Le Fa de la clé est toujours là pour te repérer.'],dit:'La main gauche entre dans le jeu.'}},
+  {id:'f3',titre:'Clé de fa, sans couleurs',mode:'portee',cle:'fa',ds:plage('C3','C4'),aide:0,sec:7,
+   lecon:{type:'portee',cle:'fa',notes:['C3','F3','C4'],rep:['C3','F3','C4'],txt:['Toutes les notes sont noires.','Tes repères : le Do grave, le Fa de la clé, le Do central.','Pars du repère le plus proche.'],dit:'Les repères, c\'est ton super-pouvoir.'}},
+  {id:'f4',titre:'Les notes graves',mode:'portee',cle:'fa',ds:plage('F2','C3'),aide:1,sec:7,
+   lecon:{type:'portee',cle:'fa',notes:['F2','G2','A2','B2','C3'],rep:['G2','C3'],txt:['La ligne du bas de la clé de fa, c\'est Sol grave.','Juste sous elle, il y a Fa.','Ces notes sont à gauche du piano, dans les sons graves.'],dit:'Ça gronde comme un ours !'}},
+ ]},
+ {num:4,titre:'La grande portée',sous:'Les deux mains, les deux clés',niveaux:[
+  {id:'g1',titre:'Les deux portées',mode:'portee',cle:'grand',ds:plage('C3','C5'),aide:1,sec:7,
+   lecon:{type:'portee',cle:'grand',notes:['C3','F3','C4','G4','C5'],rep:['C3','F3','C4','G4','C5'],txt:['La clé de sol en haut, la clé de fa en bas : c\'est la grande portée.','Les deux portées se touchent au Do central.','Regarde d\'abord la clé, puis la position.'],dit:'Deux clés, cinq repères.'}},
+  {id:'g2',titre:'Toute la grande portée',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:6,
+   lecon:{type:'portee',cle:'grand',notes:['G2','C3','F3','C4','G4','C5','G5'],rep:['G2','C3','F3','C4','G4','C5'],txt:['Toutes les notes, du Fa grave au Sol aigu.','Aucune aide. Tu as tous tes repères.','Prends ton temps pour lire, puis joue franc.'],dit:'Tu es prête ou prêt pour le grand défi.'}},
+  {id:'g3',titre:'Le grand défi',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:4.6,n:30,
+   lecon:{type:'portee',cle:'grand',notes:['F2','C4','G5'],rep:['C4'],txt:['Trente notes, plus vite que d\'habitude.','Les points grimpent avec ta série de bonnes réponses.','Trois étoiles ici, c\'est la ceinture noire de la lecture.'],dit:'Je crois en toi !'}},
+ ]},
+];
+const NIVEAUX=UNITES.flatMap(u=>u.niveaux.map(n=>(n.unite=u,n)));
+
+/* ---------- Données ---------- */
+const CLE='notesExpress.v1';
+const REG0={entree:'micro',vitesse:1,octave:true,son:true,seuil:0.012,ouvert:false};
+const profil=nom=>({nom,etoiles:{},meilleur:{},stats:{},xp:{},serie:0,dernierJour:null});
+function charger(){try{const j=JSON.parse(localStorage.getItem(CLE)||'null');if(j&&j.profils&&j.profils.length){j.reg={...REG0,...j.reg};return j;}}catch(e){}
+  return {profils:[profil('Mon profil')],actif:0,reg:{...REG0}};}
+let DATA=charger();
+const sauver=()=>{try{localStorage.setItem(CLE,JSON.stringify(DATA));}catch(e){}};
+const P=()=>DATA.profils[DATA.actif]||DATA.profils[0];
+const R=()=>DATA.reg;
+const auj=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const hier=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const OBJECTIF=30;
+function serieActuelle(p){ if(p.dernierJour===auj()||p.dernierJour===hier()) return p.serie; return 0; }
+function ajouterXP(n){const p=P(),j=auj();p.xp[j]=(p.xp[j]||0)+n;
+  if(p.dernierJour!==j){p.serie=(p.dernierJour===hier()?p.serie:0)+1;p.dernierJour=j;}
+  const cles=Object.keys(p.xp).sort();while(cles.length>60)delete p.xp[cles.shift()];sauver();}
+const etoilesTot=()=>Object.values(P().etoiles).reduce((a,b)=>a+b,0);
+function ouvert(i){ if(R().ouvert||i===0) return true; return (P().etoiles[NIVEAUX[i-1].id]||0)>=2; }
+
+/* ---------- Petits outils ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const svgEl=(tag,attrs={},html='')=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(html)e.innerHTML=html;return e;};
+function toast(t,ms=2600){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,ms);}
+function etoilesTxt(n){let s='';for(let i=0;i<3;i++)s+=i<n?'★':'<span class="vide">★</span>';return s;}
+const ETOILE='<path d="M50 6l13 28 30 3-23 20 7 30-27-16-27 16 7-30L7 37l30-3z"/>';
+function mascotte(taille=56,humeur='content'){
+  const bouche=humeur==='triste'?'<path d="M23 50q6-5 12 0" stroke="#17203B" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
+   :humeur==='wow'?'<ellipse cx="29" cy="50" rx="4.5" ry="5" fill="#17203B"/>'
+   :'<path d="M22 47q7 8 14 0" stroke="#17203B" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+  return `<svg width="${taille}" height="${taille}" viewBox="0 0 64 64" aria-hidden="true"><path d="M44 42V6c8 5 15 10 15 20" stroke="#5B3FD6" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="29" cy="45" rx="17" ry="13" fill="#5B3FD6" transform="rotate(-18 29 45)"/>
+  <ellipse cx="29" cy="45" rx="13" ry="9" fill="#fff" opacity=".18" transform="rotate(-18 29 45)"/>
+  <circle cx="23" cy="40" r="4.2" fill="#fff"/><circle cx="35" cy="37" r="4.2" fill="#fff"/><circle cx="24" cy="41" r="2" fill="#17203B"/><circle cx="36" cy="38" r="2" fill="#17203B"/>
+  <path d="M16 46q-1 2 1 3" stroke="#FF8FA3" stroke-width="3" stroke-linecap="round" fill="none" opacity=".8"/>${bouche}</svg>`;
+}
+const FLAMME=(on)=>`<svg width="20" height="22" viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="${on?'var(--flame)':'var(--lock)'}"/></svg>`;
+
+/* ---------- Son ---------- */
+let CTX=null;
+function audio(){ if(!CTX){const C=window.AudioContext||window.webkitAudioContext;CTX=new C();} if(CTX.state==='suspended')CTX.resume(); return CTX; }
+function ton(f,dur,vol=.3,type='sine',quand=0,harm=[1,.4,.18,.08]){
+  const c=audio(),t=c.currentTime+quand,g=c.createGain();
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);g.connect(c.destination);
+  harm.forEach((a,i)=>{const o=c.createOscillator(),gg=c.createGain();o.type=type;o.frequency.value=f*(i+1);gg.gain.value=a;o.connect(gg).connect(g);o.start(t);o.stop(t+dur+.05);});
+}
+const fMidi=m=>440*Math.pow(2,(m-69)/12);
+function jouerNote(m,dur=1.1){ if(!R().son) return; ton(fMidi(m),dur,.28); ecoute.ignorer(dur*800); }
+function sonOk(){ if(!R().son) return; ton(1318.5,.12,.12,'sine',0,[1]);ton(1760,.18,.12,'sine',.07,[1]); ecoute.ignorer(320); }
+function sonNon(){ if(!R().son) return; ton(196,.16,.1,'triangle',0,[1]); ecoute.ignorer(320); }
+function sonFin(){ if(!R().son) return; [523.25,659.25,783.99,1046.5].forEach((f,i)=>ton(f,.3,.14,'sine',i*.11,[1,.2])); }
+async function garderEcran(){ try{ garderEcran.v=await navigator.wakeLock?.request('screen'); }catch(e){} }
+
+/* ---------- Écoute (micro + détection de hauteur YIN) ---------- */
+function yin(buf,sr){
+  const fmin=70,fmax=1500,seuil=.13,maxT=Math.floor(sr/fmin),minT=Math.floor(sr/fmax),W=Math.min(2048,buf.length-maxT-1),off=buf.length-W-maxT-1;
+  const d=yin.d&&yin.d.length===maxT+2?yin.d:(yin.d=new Float32Array(maxT+2));
+  for(let t=1;t<=maxT+1;t++){let s=0;for(let i=0;i<W;i++){const x=buf[off+i]-buf[off+i+t];s+=x*x;}d[t]=s;}
+  d[0]=1;let somme=0;for(let t=1;t<=maxT+1;t++){somme+=d[t];d[t]=somme?d[t]*t/somme:1;}
+  let T=-1;for(let t=minT;t<=maxT;t++){if(d[t]<seuil){while(t+1<=maxT&&d[t+1]<d[t])t++;T=t;break;}}
+  if(T<0){let b=1,bt=-1;for(let t=minT;t<=maxT;t++)if(d[t]<b){b=d[t];bt=t;}if(b<.22)T=bt;else return null;}
+  const a=d[T-1],b=d[T],c=d[T+1],den=a-2*b+c,dec=den?.5*(a-c)/den:0;
+  return {f:sr/(T+dec),conf:1-b};
+}
+const ecoute={actif:false,histo:[],stable:{m:null,n:0},arme:true,silence:0,ignoreJusqua:0,onNote:null,onTrame:null,
+  async demarrer(){
+    if(this.actif) return true;
+    if(!navigator.mediaDevices?.getUserMedia) return false;
+    try{
+      const c=audio();await c.resume();
+      this.flux=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      this.src=c.createMediaStreamSource(this.flux);this.an=c.createAnalyser();this.an.fftSize=4096;this.an.smoothingTimeConstant=0;
+      this.src.connect(this.an);this.buf=new Float32Array(this.an.fftSize);this.sr=c.sampleRate;this.actif=true;
+      this.minuterie=setInterval(()=>this.analyser(),30);return true;
+    }catch(e){console.warn(e);return false;}
+  },
+  arreter(){ if(!this.actif) return; clearInterval(this.minuterie); this.flux.getTracks().forEach(t=>t.stop()); this.actif=false; },
+  ignorer(ms){ this.ignoreJusqua=Math.max(this.ignoreJusqua,performance.now()+ms); },
+  analyser(){
+    this.an.getFloatTimeDomainData(this.buf);
+    let s=0;for(let i=this.buf.length-2048;i<this.buf.length;i++)s+=this.buf[i]*this.buf[i];
+    const rms=Math.sqrt(s/2048),now=performance.now(),seuil=R().seuil,h=this.histo,ignore=now<this.ignoreJusqua;
+    const mini=h.length?Math.min(...h):rms;h.push(rms);if(h.length>8)h.shift();
+    if(rms>seuil*1.4&&rms>mini*1.7){ if(!ignore){this.arme=true;} this.stable={m:null,n:0}; }
+    let m=null,f=null;
+    if(rms>=seuil){ const r=yin(this.buf,this.sr); if(r){ f=r.f; const mf=69+12*Math.log2(f/440),mr=Math.round(mf); if(Math.abs(mf-mr)<.42&&mr>=40&&mr<=88) m=mr; } this.silence=0; }
+    else { if(!this.silence) this.silence=now; else if(now-this.silence>160&&!ignore) this.arme=true; }
+    if(m!==null){ if(this.stable.m===m) this.stable.n++; else this.stable={m,n:1}; } else if(rms<seuil) this.stable={m:null,n:0};
+    this.onTrame&&this.onTrame({rms,f,m:this.stable.n>=2?this.stable.m:null});
+    if(ignore) return;
+    if(this.arme&&this.stable.n>=3&&this.stable.m!=null){ this.arme=false; this.onNote&&this.onNote(this.stable.m); }
+  }
+};
+function seuilDeSens(v){ return 0.05*Math.pow(0.0025/0.05,(v-1)/99); }   // 1 = peu sensible, 100 = très sensible
+function sensDeSeuil(s){ return Math.round(1+99*Math.log(s/0.05)/Math.log(0.0025/0.05)); }
+
+/* ---------- Portée ---------- */
+const ESP=10, REF={sol:30,fa:18};
+function geom(cle){
+  if(cle==='grand') return {H:340,portees:[{cle:'sol',bas:150},{cle:'fa',bas:290}]};
+  return {H:250,portees:[{cle,bas:165}]};
+}
+const yNote=(p,d)=>p.bas-(d-REF[p.cle])*ESP;
+function porteePour(geo,d,niv){ if(geo.portees.length===1) return geo.portees[0]; if(d>28) return geo.portees[0]; if(d<28) return geo.portees[1]; return Math.random()<.6?geo.portees[0]:geo.portees[1]; }
+function dessinerPortee(svg,geo,x0,x1,opts={}){
+  let h='';
+  for(const p of geo.portees){
+    for(let k=0;k<5;k++){const y=p.bas-k*2*ESP;h+=`<line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}" stroke="var(--staff)" stroke-width="1.6"/>`;}
+    if(p.cle==='sol') h+=`<text x="${x0+10}" y="${p.bas-2*ESP}" font-family="var(--f-music)" font-size="${opts.fs||80}" fill="var(--staff)">\u{1D11E}</text>`;
+    else h+=`<text x="${x0+10}" y="${p.bas-ESP}" font-family="var(--f-music)" font-size="${opts.fs||80}" fill="var(--staff)">\u{1D122}</text>`;
+  }
+  if(geo.portees.length===2){const a=geo.portees[0].bas-8*ESP,b=geo.portees[1].bas;h+=`<line x1="${x0}" x2="${x0}" y1="${a}" y2="${b}" stroke="var(--staff)" stroke-width="2.4"/>`;}
+  svg.insertAdjacentHTML('beforeend',h);
+}
+function noteSVG(d,p,o={}){
+  const y=yNote(p,d),r=d-REF[p.cle],c=o.couleur?coul(d):'var(--staff)';let h='';
+  if(r<0)for(let k=-2;k>=r;k-=2){const yy=p.bas-k*ESP;h+=`<line x1="-20" x2="20" y1="${yy}" y2="${yy}" stroke="var(--staff)" stroke-width="1.8"/>`;}
+  if(r>8)for(let k=10;k<=r;k+=2){const yy=p.bas-k*ESP;h+=`<line x1="-20" x2="20" y1="${yy}" y2="${yy}" stroke="var(--staff)" stroke-width="1.8"/>`;}
+  const haut=r<4;
+  if(o.queue!==false) h+=haut?`<line x1="11.2" x2="11.2" y1="${y-2}" y2="${y-64}" stroke="${c}" stroke-width="2.4"/>`:`<line x1="-11.2" x2="-11.2" y1="${y+2}" y2="${y+64}" stroke="${c}" stroke-width="2.4"/>`;
+  if(o.repere) h+=`<circle cx="0" cy="${y}" r="20" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="4 4"/>`;
+  h+=`<ellipse cx="0" cy="${y}" rx="12.6" ry="9" fill="${c}" transform="rotate(-20 0 ${y})"/>`;
+  if(o.nom){const ly=haut?y+32:y-24;h+=`<rect x="-24" y="${ly-15}" width="48" height="22" rx="11" fill="${coul(d)}"/><text x="0" y="${ly+1}" text-anchor="middle" font-family="var(--f-display)" font-weight="700" font-size="15" fill="#fff">${nomD(d)}</text>`;}
+  return h;
+}
+function bulleSVG(d,y,o={}){
+  const c=o.couleur?coul(d):'var(--staff)';
+  return `<circle cx="0" cy="${y}" r="38" fill="${c}"/><text x="0" y="${y+11}" text-anchor="middle" font-family="var(--f-display)" font-weight="700" font-size="32" fill="var(--board)">${nomD(d)}</text>`;
+}
+
+/* ---------- Clavier ---------- */
+function clavier(el,lo,hi,opts={}){
+  el.innerHTML='';const bl=document.createElement('div');bl.className='blanches';el.append(bl);
+  const blanches=[];for(let m=lo;m<=hi;m++)if(dDeMidi(m)!==null)blanches.push(m);
+  const W=blanches.length,touches={};
+  blanches.forEach(m=>{const t=document.createElement('div');t.className='touche';t.dataset.m=m;const d=dDeMidi(m);
+    if(m===60)t.insertAdjacentHTML('beforeend','<span class="pt" title="Do central"></span>');
+    if(opts.noms==='tous'||(opts.noms!=='aucun'&&d%7===0)){const s=document.createElement('span');s.textContent=nomD(d);t.append(s);}
+    t.style.setProperty('--c',coul(d));bl.append(t);touches[m]=t;});
+  for(let m=lo;m<=hi;m++){ if(dDeMidi(m)!==null) continue; const i=blanches.indexOf(m+1); if(i<0) continue;
+    const t=document.createElement('div');t.className='touche noire';t.dataset.m=m;const w=100/W;t.style.width=(w*.62)+'%';t.style.left=`calc(${i*w}% - ${w*.31}%)`;el.append(t);touches[m]=t;}
+  const k={el,touches,
+    indice(ms){Object.values(touches).forEach(t=>t.classList.remove('indice'));(ms||[]).forEach(m=>touches[m]&&touches[m].classList.add('indice'));},
+    flash(m,cls,ms=380){const t=touches[m];if(!t)return;t.classList.remove('joue-ok','joue-non','joue');void t.offsetWidth;t.classList.add(cls);clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove(cls),ms);},
+    maintenir(m){Object.values(touches).forEach(t=>t.classList.remove('joue'));if(m!=null&&touches[m])touches[m].classList.add('joue');}};
+  el.onpointerdown=e=>{const t=e.target.closest('.touche');if(!t)return;e.preventDefault();const m=+t.dataset.m;jouerNote(m,.9);opts.onNote&&opts.onNote(m,'ecran');};
+  return k;
+}
+function bornesClavier(ds,mode){
+  if(mode==='nom') return [48,71];
+  let lo=Math.min(...ds.map(midiDe)),hi=Math.max(...ds.map(midiDe));
+  lo=lo-((lo%12)+12)%12; hi=hi-((hi%12)+12)%12+11;
+  if(hi-lo<23){ if(lo>=60) lo-=12; else hi+=12; }
+  return [lo,hi];
+}
+
+/* ---------- Navigation ---------- */
+const ECRANS=['accueil','jeu','resultats','micro','notes','reglages'];
+function montrer(id){ ECRANS.forEach(e=>$('#'+e).hidden=e!==id); window.scrollTo(0,0); if(id!=='micro'&&id!=='jeu') ecoute.onTrame=null; }
+document.querySelectorAll('[data-retour]').forEach(b=>b.onclick=()=>{ if(!$('#micro').hidden) arreterTestMicro(); accueil(); });
+
+/* ---------- Accueil ---------- */
+function accueil(){
+  montrer('accueil');const p=P(),serie=serieActuelle(p),xp=p.xp[auj()]||0;
+  $('#logo-masc').innerHTML=mascotte(38);
+  $('#puce-serie').innerHTML=FLAMME(serie>0&&p.dernierJour===auj())+`${serie} <span class="gris">${serie>1?'jours':'jour'}</span>`;
+  $('#puce-etoiles').innerHTML=`<span style="color:var(--gold)">★</span>${etoilesTot()} <span class="gris">/ ${NIVEAUX.length*3}</span>`;
+  $('#puce-profil').textContent=p.nom;
+  const fait=xp>=OBJECTIF;
+  const msg=fait?'Objectif du jour atteint. Bravo !':xp?`Encore ${OBJECTIF-xp} points d'expérience pour l'objectif du jour.`:'Une leçon ou deux, et l\'objectif du jour est atteint.';
+  const peutReviser=Object.keys(p.stats).length>=3;
+  $('#jour').innerHTML=`<div>${mascotte(64,fait?'wow':'content')}</div><div class="txt"><h3>${fait?'Super journée, '+p.nom+' !':'Objectif du jour'}</h3><p>${msg}</p>
+    <div class="jauge" aria-label="${xp} sur ${OBJECTIF}"><i style="width:${Math.min(100,xp/OBJECTIF*100)}%"></i></div>
+    <div class="rangee" style="margin-top:10px"><span style="font-weight:700;font-variant-numeric:tabular-nums">${xp} / ${OBJECTIF} XP</span>
+    ${peutReviser?'<button class="btn petit ok" id="b-revision" style="margin-left:auto">Révision des notes difficiles</button>':''}</div></div>`;
+  if(peutReviser) $('#b-revision').onclick=lancerRevision;
+  // chemin
+  const ch=$('#chemin');ch.innerHTML='';let idx=0,courant=-1;
+  for(let i=0;i<NIVEAUX.length;i++){ if(ouvert(i)&&!(P().etoiles[NIVEAUX[i].id]>=1)){courant=i;break;} }
+  for(const u of UNITES){
+    const sec=document.createElement('div');sec.className='unite';
+    sec.innerHTML=`<div class="banniere u${u.num}"><div style="min-width:0"><div class="eyebrow">Unité ${u.num}</div><h2>${u.titre}</h2><p>${u.sous}</p></div></div>`;
+    const sent=document.createElement('div');sent.className='sentier';
+    u.niveaux.forEach((n,j)=>{const i=idx++;const o=ouvert(i),et=P().etoiles[n.id]||0;
+      const b=document.createElement('button');b.className='noeud'+(o?'':' ferme')+(et===3?' fini':'')+(i===courant?' courant':'');
+      b.style.transform=`translateX(${Math.round(Math.sin(j*1.2)*90)}px)`;
+      b.setAttribute('aria-label',`${n.titre}${o?'':' (verrouillé)'}`);
+      b.innerHTML=`${i===courant?'<span class="bulle-go">Commencer</span>':''}<span class="rond">${o?(et===3?'★':i+1):'<svg width="26" height="28" viewBox="0 0 26 28"><rect x="3" y="12" width="20" height="15" rx="4" fill="currentColor"/><path d="M7 12V8a6 6 0 0 1 12 0v4" stroke="currentColor" stroke-width="3.4" fill="none"/></svg>'}</span>
+        <span class="nom">${n.titre}</span><span class="etoiles">${o?etoilesTxt(et):''}</span>`;
+      b.onclick=()=>{ if(!o){toast('Gagne 2 étoiles au niveau précédent pour ouvrir celui-ci.');return;} ouvrirLecon(i); };
+      sent.append(b);});
+    sec.append(sent);ch.append(sec);
+  }
+}
+$('#puce-profil').onclick=()=>{ if(DATA.profils.length<2){reglages();return;} DATA.actif=(DATA.actif+1)%DATA.profils.length;sauver();accueil();toast('Joueur : '+P().nom); };
+$('#puce-serie').onclick=()=>toast('Joue un peu chaque jour pour allonger ta série.');
+$('#puce-etoiles').onclick=()=>toast('Chaque niveau donne jusqu\'à 3 étoiles dans le défi.');
+$('#b-micro').onclick=()=>testMicro();
+$('#b-notes').onclick=()=>mesNotes();
+$('#b-reglages').onclick=()=>reglages();
+
+/* ---------- Feuille de leçon ---------- */
+function illustration(l){
+  if(l.type==='clavier'){
+    const div=document.createElement('div');div.className='clavier';div.style.height='120px';
+    const k=clavier(div,48,71,{noms:'tous'});k.indice(l.surl.flatMap(s=>{const d=dDe(s);return [midiDe(d)];}));
+    if(l.surl.length===3&&l.surl.every(s=>s[0]==='C')) k.indice([48,60,72].filter(m=>m<=71));
+    return div;
+  }
+  const geo=geom(l.cle),w=Math.max(380,120+l.notes.length*70);
+  const top=l.cle==='grand'?20:l.cle==='sol'?40:20,haut=geo.H-(l.cle==='grand'?20:60);const svg=svgEl('svg',{viewBox:`0 ${top} ${w} ${haut}`,style:`width:100%;min-width:${Math.min(w,520)}px;height:auto;display:block`});
+  dessinerPortee(svg,geo,4,w-4);
+  l.notes.forEach((s,i)=>{const d=dDe(s),p=porteePour(geo,d);const g=svgEl('g',{transform:`translate(${130+i*((w-170)/Math.max(1,l.notes.length-1))},0)`},noteSVG(d,p,{couleur:true,nom:true,repere:l.rep.includes(s)}));svg.append(g);});
+  const wrap=document.createElement('div');wrap.append(svg);return wrap;
+}
+function ouvrirLecon(i){
+  const n=NIVEAUX[i],l=n.lecon,v=$('#voile'),et=P().etoiles[n.id]||0,best=P().meilleur[n.id]||0;
+  v.innerHTML='';const f=document.createElement('div');f.className='feuille';f.setAttribute('role','dialog');f.setAttribute('aria-label',n.titre);
+  f.innerHTML=`<div class="rangee" style="justify-content:space-between"><div class="eyebrow">Unité ${n.unite.num} · Niveau ${i+1}</div><button class="fermer" aria-label="Fermer">×</button></div>
+   <h2>${n.titre}</h2><div class="illus" id="illus"></div>
+   <ol class="lecon-txt">${l.txt.map((t,k)=>`<li><b class="num">${k+1}</b><span>${t}</span></li>`).join('')}</ol>
+   <div class="dialogue">${mascotte(52)}<div class="dit">${l.dit}</div></div>
+   <div class="rangee" style="margin:10px 0 14px"><button class="btn petit" id="b-ecoute">Écouter ces notes</button>
+     <span style="color:var(--muted);margin-left:auto">Défi : <span class="etoiles">${etoilesTxt(et)}</span>${best?` · record ${best}`:''}</span></div>
+   <div class="choix"><button class="btn" id="b-prat">Pratique<small>12 notes, sans chrono</small></button><button class="btn prim" id="b-defi">Défi<small>${n.n||20} notes qui défilent</small></button></div>`;
+  v.append(f);v.hidden=false;$('#illus').append(illustration(l));
+  const fermer=()=>{v.hidden=true;v.innerHTML='';};
+  f.querySelector('.fermer').onclick=fermer;v.onclick=e=>{if(e.target===v)fermer();};
+  $('#b-ecoute').onclick=()=>{const ms=(l.type==='clavier'?l.surl:l.notes).map(s=>midiDe(dDe(s)));ms.forEach((m,k)=>setTimeout(()=>jouerNote(m,.7),k*420));};
+  $('#b-prat').onclick=()=>{fermer();lancer(n,'pratique');};
+  $('#b-defi').onclick=()=>{fermer();lancer(n,'defi');};
+}
+
+/* ---------- Choix des notes (révision espacée) ---------- */
+const cleStat=(niv,d)=>niv.oct==='any'?'pc:'+LETTRES[d%7]:LETTRES[d%7]+Math.floor(d/7);
+function choisir(niv,prec){
+  const st=P().stats;
+  const w=niv.ds.map(d=>{const s=st[cleStat(niv,d)];let x=1;
+    if(!s||s.ok+s.err<3)x+=1.2;else{x+=4*s.err/(s.ok+s.err);if(s.ok&&s.t/s.ok>2600)x+=.8;}
+    if(d===prec)x*=niv.ds.length>1?.12:1;return x;});
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return niv.ds[i];}return niv.ds[niv.ds.length-1];
+}
+function noter(niv,d,ok,ms){const k=cleStat(niv,d),s=P().stats[k]||(P().stats[k]={ok:0,err:0,t:0});if(ok){s.ok++;s.t+=Math.min(ms,8000);}else s.err++;
+  if(s.ok+s.err>40){s.ok=Math.round(s.ok*.8);s.err=Math.round(s.err*.8);s.t=Math.round(s.t*.8);}}
+function maitrise(s){ if(!s||s.ok+s.err<3) return 0; const r=s.ok/(s.ok+s.err); return r>=.9?3:r>=.7?2:1; }
+function lancerRevision(){
+  const st=P().stats,joues=NIVEAUX.filter(n=>n.mode==='portee'&&n.ds.some(d=>st[cleStat(n,d)]));
+  if(!joues.length){const k=NIVEAUX[3];lancer({...k,id:'revision',titre:'Révision',revision:true},'pratique');return;}
+  const ds=[...new Set(joues.flatMap(n=>n.ds))].filter(d=>st[LETTRES[d%7]+Math.floor(d/7)]);
+  ds.sort((a,b)=>{const sa=st[LETTRES[a%7]+Math.floor(a/7)],sb=st[LETTRES[b%7]+Math.floor(b/7)];return (sb.err/(sb.ok+sb.err+1))-(sa.err/(sa.ok+sa.err+1));});
+  const pick=ds.slice(0,Math.max(4,Math.min(7,ds.length)));
+  const aigu=pick.some(d=>d>28),grave=pick.some(d=>d<28);
+  lancer({id:'revision',titre:'Révision',mode:'portee',cle:aigu&&grave?'grand':grave?'fa':'sol',ds:pick,aide:1,sec:8,revision:true,unite:{num:0}},'pratique');
+}
+
+/* ---------- Jeu ---------- */
+let G=null,clavJeu=null;
+const PHRASES_OK=['Bravo !','Oui !','Super !','Bien lu !','Wow !','Parfait !','Tu l\'as !'];
+const PHRASES_COMBO=['5 de suite !','Tu es en feu !','Incroyable série !','Personne ne t\'arrête !'];
+function lancer(niv,mode){
+  const geo=niv.mode==='nom'?{H:250,nom:true}:geom(niv.cle);
+  const sc=$('#scene');montrer('jeu');const rc=sc.getBoundingClientRect();
+  const W=Math.round(Math.max(440,Math.min(1000,geo.H*1.15*(rc.width/Math.max(1,rc.height)))));
+  G={W,niv,mode,geo,total:mode==='defi'?(niv.n||20):12,crees:0,faits:0,score:0,combo:0,maxCombo:0,bons:0,notes:[],t:0,prochain:0,revoir:{},pret:false,fin:false,
+     HIT:geo.nom?110:175,X0:W+50,vitesse:(W+40-(geo.nom?110:175))/(niv.sec/R().vitesse),ecart:Math.max(1.15,niv.sec*.3)/R().vitesse,erreurs:0,sansAide:niv.aide===0};
+  garderEcran();
+  const svg=$('#planche');svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${W} ${geo.H}`);
+  if(geo.nom){ svg.insertAdjacentHTML('beforeend',`<line x1="0" x2="${W}" y1="125" y2="125" stroke="var(--line)" stroke-width="2" stroke-dasharray="6 10"/>`); }
+  else dessinerPortee(svg,geo,0,W);
+  svg.insertAdjacentHTML('beforeend',`<rect class="zone-frappe" x="${G.HIT-34}" y="0" width="68" height="${geo.H}" rx="12"/><line x1="${G.HIT}" x2="${G.HIT}" y1="6" y2="${geo.H-6}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="3 6" opacity=".6"/>`);
+  G.calque=svgEl('g');G.fx=svgEl('g');svg.append(G.calque,G.fx);
+  const [lo,hi]=bornesClavier(niv.ds,niv.mode);
+  clavJeu=clavier($('#clavier-jeu'),lo,hi,{noms:niv.mode==='nom'?(niv.aide>=1?'tous':'do'):(niv.aide>=2?'tous':niv.aide===1?'do':'do'),onNote:(m)=>{ecoute.ignorer(900);recu(m);}});
+  $('#prog').style.width='0%';$('#score').textContent='0';$('#combo').textContent='';
+  $('#consigne').textContent=mode==='defi'?'Joue chaque note avant qu\'elle atteigne la ligne.':'Joue la note. Prends ton temps.';
+  $('#encourage').classList.remove('vu');$('#encourage-masc').innerHTML=mascotte(46);
+  demarrerEntree().then(()=>compteRebours());
+}
+async function demarrerEntree(){
+  if(R().entree!=='micro'){ $('#entendu-txt').textContent='Clavier à l\'écran'; $('#vu').style.width='0'; return; }
+  const ok=await ecoute.demarrer();
+  if(!ok){ $('#entendu-txt').textContent='Micro indisponible'; toast('Le micro n\'est pas accessible. Tu peux jouer sur le clavier à l\'écran.',4200); return; }
+  $('#entendu-txt').textContent='J\'écoute…';
+  ecoute.onNote=m=>recu(m);
+  ecoute.onTrame=({rms,m})=>{ $('#vu').style.width=Math.min(100,rms/(R().seuil*4)*100)+'%'; if(clavJeu) clavJeu.maintenir(m); };
+}
+function compteRebours(){
+  const mot=$('#mot');
+  if(G.mode==='pratique'){ G.pret=true; G.dernier=performance.now(); nouvelleNote(); requestAnimationFrame(boucle); return; }
+  let n=3;mot.hidden=false;mot.textContent=n;
+  const tic=()=>{ if(!G) return; n--; if(n>0){mot.textContent=n;if(R().son)ton(660,.1,.1,'sine',0,[1]);setTimeout(tic,700);} else {mot.textContent='Go !';if(R().son)ton(990,.18,.12,'sine',0,[1]);setTimeout(()=>{mot.hidden=true;},500);G.pret=true;G.dernier=performance.now();requestAnimationFrame(boucle);} };
+  if(R().son)ton(660,.1,.1,'sine',0,[1]); setTimeout(tic,700);
+}
+function nouvelleNote(){
+  const niv=G.niv,prec=G.notes.length?G.notes[G.notes.length-1].d:null,d=choisir(niv,prec),geo=G.geo;
+  const x=G.mode==='defi'?G.X0:Math.round(G.W*.56);
+  const note={d,x,etat:'vient',t0:G.t,err:0,indice:false};
+  note.el=svgEl('g',{transform:`translate(${x},0)`});
+  note.inner=svgEl('g');note.el.append(note.inner);
+  if(geo.nom) note.p=null; else note.p=porteePour(geo,d,niv);
+  dessinerNote(note);
+  if(G.mode==='pratique'){note.inner.style.opacity=0;note.inner.style.transition='opacity .25s';requestAnimationFrame(()=>note.inner.style.opacity=1);}
+  G.calque.append(note.el);G.notes.push(note);G.crees++;majIndice();
+}
+function dessinerNote(note){
+  const niv=G.niv,aide=note.indice?2:niv.aide;
+  note.inner.innerHTML=G.geo.nom?bulleSVG(note.d,125,{couleur:aide>=1}):noteSVG(note.d,note.p,{couleur:aide>=1,nom:aide>=2});
+}
+const cible=()=>G.notes.find(n=>n.etat==='vient');
+function majIndice(){
+  const c=cible();if(!clavJeu)return;
+  if(!c||(G.niv.aide<2&&!c.indice)){clavJeu.indice([]);return;}
+  const ms=Object.keys(clavJeu.touches).map(Number).filter(m=>G.niv.oct==='any'?((m%12)===SEMI[c.d%7]):m===midiDe(c.d));
+  clavJeu.indice(ms);
+}
+function accepte(c,m){
+  if(G.niv.oct==='any'||!R().octave) return ((m%12)+12)%12===SEMI[c.d%7];
+  return m===midiDe(c.d);
+}
+function recu(m){
+  const lbl=$('#entendu-txt');lbl.textContent='Entendu : '+NOMS12[((m%12)+12)%12];
+  if(!G||!G.pret||G.fin) return;
+  const c=cible();if(!c) return;
+  const reaction=(G.t-c.t0)*1000;
+  if(accepte(c,m)){
+    c.etat='ok';G.faits++;if(!c.err)G.bons++;G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);
+    noter(G.niv,c.d,true,reaction);
+    const mult=1+Math.min(4,Math.floor(G.combo/5))*.5;
+    const frac=G.mode==='defi'?Math.max(0,(c.x-G.HIT)/(G.X0-G.HIT)):Math.max(0,1-reaction/6000);
+    const pts=Math.round((100+100*frac)*mult*(c.err?.5:1));G.score+=pts;
+    c.inner.style.transformOrigin=`0px ${yDe(c)}px`;c.inner.classList.add('n-ok');
+    const t=svgEl('text',{x:c.x,y:yDe(c)-30,'text-anchor':'middle',class:'points'});t.textContent='+'+pts;G.fx.append(t);setTimeout(()=>t.remove(),800);
+    clavJeu&&clavJeu.flash(m,'joue-ok');sonOk();
+    setTimeout(()=>c.el.remove(),460);
+    if(G.combo%5===0) encourager(PHRASES_COMBO[Math.min(3,G.combo/5-1)],'wow');
+    else if(Math.random()<.18) encourager(PHRASES_OK[Math.floor(Math.random()*PHRASES_OK.length)]);
+    if(G.mode==='pratique'){ if(G.crees<G.total) setTimeout(()=>G&&!G.fin&&nouvelleNote(),420); }
+    majHud();majIndice();verifierFin();
+  } else {
+    c.err++;G.erreurs++;if(c.err===1){noter(G.niv,c.d,false,0);G.revoir[c.d]=1;}G.combo=0;
+    c.inner.classList.remove('n-secoue');void c.inner.getBBox;requestAnimationFrame(()=>c.inner.classList.add('n-secoue'));
+    setTimeout(()=>c.inner.classList.remove('n-secoue'),360);
+    clavJeu&&clavJeu.flash(m,'joue-non');sonNon();
+    const dj=dDeMidi(m);
+    if(!G.geo.nom&&dj!==null&&Math.abs(dj-c.d)<=12){const p=c.p;const g=svgEl('g',{transform:`translate(${c.x+34},0)`,class:'fantome'},noteSVG(dj,p,{queue:false}).replace(/fill="var\(--staff\)"/g,'fill="var(--bad)"'));G.fx.append(g);setTimeout(()=>g.remove(),900);}
+    if(G.mode==='pratique'&&c.err>=2&&!c.indice){c.indice=true;dessinerNote(c);majIndice();encourager('Regarde l\'indice. Ça arrive à tout le monde !');}
+    else if(c.err===1&&Math.random()<.5) encourager(G.mode==='pratique'?'Presque ! Essaie encore.':'Pas grave, continue !','triste');
+    majHud();
+  }
+}
+function yDe(n){ return G.geo.nom?125:yNote(n.p,n.d); }
+function encourager(t,h='content'){ const e=$('#encourage');$('#encourage-txt').textContent=t;$('#encourage-masc').innerHTML=mascotte(46,h);e.classList.add('vu');clearTimeout(encourager.t);encourager.t=setTimeout(()=>e.classList.remove('vu'),1600); }
+function majHud(){ $('#score').textContent=G.score;$('#prog').style.width=(G.faits/G.total*100)+'%';
+  const mult=1+Math.min(4,Math.floor(G.combo/5))*.5;$('#combo').textContent=G.combo>=3?`${G.combo} de suite${mult>1?' ×'+mult:''}`:''; }
+function boucle(ts){
+  if(!G||G.fin) return;
+  const dt=Math.min(.05,(ts-G.dernier)/1000);G.dernier=ts;G.t+=dt;
+  if(G.mode==='defi'){
+    const actives=G.notes.filter(n=>n.etat==='vient');
+    if(G.crees<G.total&&(G.t>=G.prochain||!actives.length)){ const der=actives[actives.length-1]; if(!der||der.x<G.X0-130){nouvelleNote();G.prochain=G.t+G.ecart;} }
+    const v=G.vitesse*(1+G.faits/G.total*.18);
+    for(const n of G.notes){ if(n.etat==='rate'||n.etat==='vient'){ n.x-=v*dt; n.el.setAttribute('transform',`translate(${n.x.toFixed(1)},0)`); } }
+    const c=cible();
+    if(c&&c.x<=G.HIT-20){ c.etat='rate';G.faits++;G.combo=0;if(!c.err)noter(G.niv,c.d,false,0);G.revoir[c.d]=1;c.inner.classList.add('n-rate');setTimeout(()=>c.el.remove(),700);sonNon();majHud();majIndice();verifierFin(); }
+  }
+  requestAnimationFrame(boucle);
+}
+function verifierFin(){ if(G.faits>=G.total&&!G.fin){ G.fin=true; setTimeout(resultats,650); } }
+function quitter(){ if(G){G.fin=true;} G=null; ecoute.onNote=null; ecoute.onTrame=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){} accueil(); }
+$('#b-quitter').onclick=quitter;
+
+/* ---------- Résultats ---------- */
+function resultats(){
+  const g=G,niv=g.niv,prec=g.bons/g.total,p=P();
+  ecoute.onNote=null;ecoute.onTrame=null;ecoute.arreter();
+  let et=0;if(g.mode==='defi'&&!niv.revision)et=prec>=.95?3:prec>=.85?2:prec>=.7?1:0;
+  const avant=p.etoiles[niv.id]||0,i=NIVEAUX.indexOf(niv);
+  if(g.mode==='defi'&&!niv.revision){ p.etoiles[niv.id]=Math.max(avant,et); p.meilleur[niv.id]=Math.max(p.meilleur[niv.id]||0,g.score); }
+  const xp=Math.max(5,Math.round(g.score/150));ajouterXP(xp);sauver();
+  const ouvreSuivant=i>=0&&i<NIVEAUX.length-1&&avant<2&&(p.etoiles[niv.id]||0)>=2;
+  const titre=g.mode==='pratique'?(prec>=.8?'Belle pratique !':'Bonne pratique !'):et===3?'Parfait !':et===2?'Bravo !':et===1?'Pas mal du tout !':'On réessaie ?';
+  const humeur=et>=2||(g.mode==='pratique'&&prec>=.8)?'wow':et===0&&g.mode==='defi'?'triste':'content';
+  const sous=g.mode==='pratique'?(niv.revision?'Tes notes difficiles ont été revues.':'Tu es prête ou prêt pour le défi quand tu veux.'):et<2?'Il faut 2 étoiles (85 %) pour ouvrir le niveau suivant. La pratique aide beaucoup.':ouvreSuivant?'Tu as ouvert le niveau suivant !':'Tu peux viser les 3 étoiles.';
+  const revoir=Object.keys(g.revoir).map(Number).sort((a,b)=>a-b);
+  $('#res').innerHTML=`${mascotte(96,humeur)}<h1>${titre}</h1>
+   ${g.mode==='defi'&&!niv.revision?`<div class="grosses-etoiles">${[0,1,2].map(k=>`<svg viewBox="0 0 100 100" class="${k<et?'e':''}" style="animation-delay:${k*.25}s;${k<et?'':'transform:none'}"><g fill="${k<et?'var(--gold)':'var(--line)'}">${ETOILE}</g></svg>`).join('')}</div>`:''}
+   <p style="margin:0;color:var(--muted);max-width:44ch">${sous}</p>
+   <div class="tuiles"><div class="tuile"><b>${g.score}</b><span>Points</span></div><div class="tuile"><b>${Math.round(prec*100)} %</b><span>Du premier coup</span></div><div class="tuile"><b>+${xp}</b><span>XP</span></div></div>
+   ${revoir.length?`<div><div style="font-weight:700;margin-bottom:6px">À revoir</div><div class="revoir">${revoir.map(d=>`<span class="pastille" style="background:${coul(d)}">${niv.oct==='any'?nomD(d):nomLong(d)}</span>`).join('')}</div></div>`:''}
+   <div class="rangee" style="justify-content:center"><button class="btn" id="r-carte">Retour au chemin</button><button class="btn" id="r-encore">Rejouer</button>
+   ${g.mode==='pratique'&&!niv.revision?'<button class="btn prim" id="r-defi">Passer au défi</button>':''}
+   ${ouvreSuivant?'<button class="btn prim" id="r-suiv">Niveau suivant</button>':''}</div>`;
+  montrer('resultats');sonFin();
+  $('#r-carte').onclick=accueil;$('#r-encore').onclick=()=>niv.revision?lancerRevision():lancer(niv,g.mode);
+  if($('#r-defi'))$('#r-defi').onclick=()=>lancer(niv,'defi');
+  if($('#r-suiv'))$('#r-suiv').onclick=()=>{accueil();ouvrirLecon(i+1);};
+  G=null;
+}
+
+/* ---------- Test du micro ---------- */
+let clavMicro=null;
+function testMicro(){
+  montrer('micro');
+  const svg=$('#m-portee');svg.innerHTML='';const geo=geom('grand');dessinerPortee(svg,geo,4,396);const g=svgEl('g',{transform:'translate(250,0)'});svg.append(g);
+  clavMicro=clavier($('#clavier-micro'),36,83,{noms:'do',onNote:m=>montrerLu(m)});
+  $('#m-sens').value=sensDeSeuil(R().seuil);majSeuil();
+  function montrerLu(m){ if(m==null) return; $('#m-note').textContent=NOMS12[((m%12)+12)%12]; const d=dDeMidi(m);
+    g.innerHTML=d!==null&&d>=dDe('C2')&&d<=dDe('C6')?noteSVG(d,porteePour(geo,d),{couleur:true,nom:true}):''; clavMicro.flash(m,'joue-ok',600); }
+  testMicro.montrer=montrerLu;
+}
+function majSeuil(){ $('#m-seuil').style.left=Math.min(98,25)+'%'; }
+$('#m-sens').oninput=e=>{R().seuil=seuilDeSens(+e.target.value);sauver();};
+$('#m-go').onclick=async()=>{
+  const ok=await ecoute.demarrer();
+  if(!ok){$('#m-hz').textContent='Le micro est refusé ou absent. Vérifie la permission du navigateur pour ce site.';return;}
+  $('#m-go').textContent='J\'écoute';
+  ecoute.onNote=m=>testMicro.montrer(m);
+  ecoute.onTrame=({rms,f,m})=>{ $('#m-vu').style.width=Math.min(100,rms/(R().seuil*4)*100)+'%'; $('#m-hz').textContent=f&&m!=null?`${f.toFixed(1)} Hz`:'…'; clavMicro&&clavMicro.maintenir(m); };
+};
+$('#m-calib').onclick=async()=>{
+  const ok=await ecoute.demarrer();if(!ok){$('#m-hz').textContent='Le micro est refusé ou absent.';return;}
+  $('#m-hz').textContent='Silence s\'il te plaît…';const vals=[];const avant=ecoute.onTrame;
+  ecoute.onTrame=(t)=>{vals.push(t.rms);avant&&avant(t);};
+  setTimeout(()=>{ecoute.onTrame=avant;vals.sort((a,b)=>a-b);const p90=vals[Math.floor(vals.length*.9)]||.004;
+    R().seuil=Math.min(.05,Math.max(.004,p90*3));sauver();$('#m-sens').value=sensDeSeuil(R().seuil);$('#m-hz').textContent='C\'est réglé. Joue une note pour essayer.';},1600);
+};
+function arreterTestMicro(){ ecoute.onNote=null; ecoute.onTrame=null; ecoute.arreter(); $('#m-go').textContent='Écouter'; }
+
+/* ---------- Mes notes ---------- */
+function ficheNote(d,s,portee){
+  const m=maitrise(s),div=document.createElement('div');div.className='fiche-note m'+m;
+  const libs=0;const lib=m===3?'Je la connais':m===2?'Presque':m===1?'À pratiquer':'À découvrir';
+  if(portee){const cle=d>=28?'sol':'fa',geo=geom(cle);const svg=svgEl('svg',{viewBox:cle==='sol'?'70 45 100 150':'70 75 100 150',preserveAspectRatio:'xMidYMid meet'});dessinerPortee(svg,geo,70,170);
+    svg.querySelectorAll('text').forEach(t=>t.remove());svg.append(svgEl('g',{transform:'translate(124,0)'},noteSVG(d,geo.portees[0],{couleur:true,queue:false})));div.append(svg);}
+  else div.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="${coul(d)}"/><text x="50" y="61" text-anchor="middle" font-family="var(--f-display)" font-weight="700" font-size="30" fill="#fff">${nomD(d)}</text></svg>`);
+  div.insertAdjacentHTML('beforeend',`<b>${portee?nomLong(d):nomD(d)}</b><small>${lib}</small>`);return div;
+}
+function mesNotes(){
+  montrer('notes');const st=P().stats;
+  const gc=$('#g-clavier');gc.innerHTML='';plage('C4','B4').forEach(d=>gc.append(ficheNote(d,st['pc:'+LETTRES[d%7]],false)));
+  const gp=$('#g-portee');gp.innerHTML='';plage('F2','G5').forEach(d=>gp.append(ficheNote(d,st[LETTRES[d%7]+Math.floor(d/7)],true)));
+}
+
+/* ---------- Réglages ---------- */
+function reglages(){
+  montrer('reglages');const r=R();
+  $('#r-nom').value=P().nom;
+  const pr=$('#r-profils');pr.innerHTML='';DATA.profils.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.nom;b.setAttribute('aria-pressed',i===DATA.actif);b.onclick=()=>{DATA.actif=i;sauver();reglages();};pr.append(b);});
+  $('#r-suppr').hidden=DATA.profils.length<2;
+  const seg=(id,v)=>$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(v))));
+  seg('#r-entree',r.entree);seg('#r-vitesse',r.vitesse);
+  $('#r-octave').checked=r.octave;$('#r-son').checked=r.son;$('#r-ouvert').checked=r.ouvert;
+}
+$('#r-nom').oninput=e=>{P().nom=e.target.value.trim()||'Joueur';sauver();};
+$('#r-nom').onchange=()=>reglages();
+$('#r-ajout').onclick=()=>{DATA.profils.push(profil('Joueur '+(DATA.profils.length+1)));DATA.actif=DATA.profils.length-1;sauver();reglages();$('#r-nom').focus();$('#r-nom').select();};
+function confirmerSur(btn,txt,action){ if(btn.dataset.conf){delete btn.dataset.conf;action();return;} const ancien=btn.textContent;btn.dataset.conf=1;btn.textContent=txt;
+  setTimeout(()=>{if(btn.dataset.conf){delete btn.dataset.conf;btn.textContent=ancien;}},3500); }
+$('#r-suppr').onclick=e=>confirmerSur(e.currentTarget,'Appuie encore pour retirer '+P().nom,()=>{DATA.profils.splice(DATA.actif,1);DATA.actif=0;sauver();reglages();});
+$('#r-reset').onclick=e=>confirmerSur(e.currentTarget,'Appuie encore pour tout effacer',()=>{const n=P().nom;DATA.profils[DATA.actif]=profil(n);sauver();toast('Progression effacée.');reglages();});
+$('#r-entree').onclick=e=>{const b=e.target.closest('button');if(!b)return;R().entree=b.dataset.v;sauver();reglages();};
+$('#r-vitesse').onclick=e=>{const b=e.target.closest('button');if(!b)return;R().vitesse=+b.dataset.v;sauver();reglages();};
+$('#r-octave').onchange=e=>{R().octave=e.target.checked;sauver();};
+$('#r-son').onchange=e=>{R().son=e.target.checked;sauver();};
+$('#r-ouvert').onchange=e=>{R().ouvert=e.target.checked;sauver();};
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(!$('#voile').hidden){$('#voile').hidden=true;$('#voile').innerHTML='';} else if(!$('#jeu').hidden) quitter(); } });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&G) garderEcran(); });
+accueil();
+</script>
+</body>
+</html>
