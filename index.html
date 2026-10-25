@@ -123,7 +123,24 @@ h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance
 .dialogue .dit{background:var(--accent-soft);border-radius:16px 16px 16px 4px;padding:10px 14px;font-weight:700;color:var(--ink)}
 
 /* Jeu */
-#jeu{display:flex;flex-direction:column;height:100%;padding-block:8px 10px;gap:10px}
+#jeu,#tuto{display:flex;flex-direction:column;height:100%;padding-block:8px 10px;gap:10px}
+#tuto[hidden]{display:none!important}
+.t-titre{display:flex;flex-direction:column;line-height:1.15;min-width:0;margin-right:auto}
+.t-titre .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.t-titre b{font-family:var(--f-display);font-size:20px}
+.t-points{display:flex;gap:6px}
+.t-points i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.t-points i.vu{background:var(--accent)}
+.t-sous{display:flex;align-items:center;gap:12px;min-height:64px}
+.t-dit{flex:1;min-width:0;background:var(--accent-soft);border-radius:16px 16px 16px 4px;padding:10px 16px;font-weight:700;font-size:clamp(17px,2.4vw,22px);line-height:1.3}
+.touche.groupe{background:var(--accent)!important;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{filter:brightness(1.35)}}
+.t-app{animation:tapp .35s ease-out}
+@keyframes tapp{from{opacity:0;transform:translateY(-14px)}}
+.bande{fill:var(--gold);opacity:.28;animation:pulseb 1.1s ease-in-out infinite}
+@keyframes pulseb{50%{opacity:.5}}
+.cle-pulse{transform-box:fill-box;transform-origin:center;animation:clep .9s ease-in-out 2}
+@keyframes clep{50%{transform:scale(1.18);fill:var(--accent)}}
 .hud{display:flex;align-items:center;gap:12px}
 .hud .prog{flex:1;height:16px;background:var(--surface);border-radius:999px;overflow:hidden;border:1px solid var(--line);min-width:60px}
 .hud .prog>i{display:block;height:100%;width:0;background:var(--ok);border-radius:999px;transition:width .3s}
@@ -259,6 +276,19 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <div class="clavier" id="clavier-jeu"></div>
 </section>
 
+<!-- TUTORIEL -->
+<section id="tuto" class="ecran" hidden>
+  <div class="hud">
+    <button class="fermer" id="t-fermer" aria-label="Fermer le tutoriel">×</button>
+    <div class="t-titre"><span class="eyebrow">Tutoriel</span><b id="t-titre"></b></div>
+    <div class="t-points" id="t-points" aria-hidden="true"></div>
+    <button class="btn petit" id="t-passer">Passer</button>
+  </div>
+  <div class="scene" id="t-scene"><svg class="planche" id="t-planche" preserveAspectRatio="xMidYMid meet"></svg><div class="mot" id="t-mot" hidden></div></div>
+  <div class="t-sous"><span id="t-masc"></span><div class="t-dit" id="t-dit" aria-live="polite"></div><button class="btn petit" id="t-skip" hidden>Je passe</button></div>
+  <div class="clavier" id="t-clavier"></div>
+</section>
+
 <!-- RÉSULTATS -->
 <section id="resultats" class="ecran" hidden><div class="resultat" id="res"></div></section>
 
@@ -326,7 +356,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <li>Visez 10 minutes par jour plutôt qu'une heure la fin de semaine. L'objectif du jour est réglé pour ça.</li>
         <li>La méthode suit l'ordre des méthodes Faber et Alfred : le clavier d'abord, puis trois notes repères (le Do central, le Sol de la clé de sol, le Fa de la clé de fa), puis la lecture par pas et par sauts à partir de ces repères.</li>
         <li>Les couleurs et les noms sur les notes sont des aides qui disparaissent au fil des niveaux. C'est voulu : l'enfant apprend à lire la position, pas la couleur.</li>
-        <li>Un niveau s'ouvre avec 2 étoiles, soit 85 % de notes justes du premier coup. Si ça bloque, la pratique sans chrono et la révision aident.</li>
+        <li>Un niveau s'ouvre avec 2 étoiles, soit 80 % de notes justes du premier coup dans le défi. Si ça bloque, la pratique sans chrono et la révision aident.</li>
+        <li>Chaque niveau commence par un tutoriel animé de moins d'une minute, qui se termine par une note à jouer. On peut le revoir depuis la fiche du niveau.</li>
         <li>Les doigts comptent aussi : pouce sur le Do, un doigt par touche, poignet souple.</li>
       </ul>
     </div>
@@ -341,6 +372,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <div id="voile" class="voile" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
+<script src="tutos.js"></script>
 <script>
 'use strict';
 /* ---------- Notes ---------- */
@@ -357,46 +389,52 @@ function nomLong(d){ if(d===28) return 'Do central'; return NOMS[d%7]+(d>28?' �
 /* ---------- Programme ---------- */
 const UNITES=[
  {num:1,titre:'Le clavier',sous:'Trouver les notes sans regarder la portée',niveaux:[
-  {id:'k1',titre:'Trouve les Do',mode:'nom',ds:[dDe('C4')],oct:'any',aide:2,sec:10,
+  {id:'k1',titre:'Trouve les Do',mode:'nom',ds:[dDe('C4')],oct:'any',aide:2,sec:11,
    lecon:{type:'clavier',surl:['C3','C4','C5'],txt:['Les touches noires sont en groupes de 2 et de 3.','Le Do est la touche blanche juste à gauche du groupe de 2 touches noires.','Il y a plusieurs Do sur le piano. Ici, tous les Do comptent.'],dit:'Cherche les deux touches noires. Le Do est juste à côté !'}},
-  {id:'k2',titre:'Do, Ré, Mi',mode:'nom',ds:plage('C4','E4'),oct:'any',aide:2,sec:10,
+  {id:'k2',titre:'Do, Ré, Mi',mode:'nom',ds:plage('C4','E4'),oct:'any',aide:2,sec:11,
    lecon:{type:'clavier',surl:['C4','D4','E4'],txt:['Le groupe de 2 touches noires a trois voisines blanches.','De gauche à droite : Do, Ré, Mi.','Ré est coincé entre les deux touches noires.'],dit:'Ré, c\'est la touche prise en sandwich.'}},
-  {id:'k3',titre:'Fa, Sol, La, Si',mode:'nom',ds:plage('F4','B4'),oct:'any',aide:2,sec:10,
+  {id:'k3',titre:'Fa, Sol, La, Si',mode:'nom',ds:plage('F4','B4'),oct:'any',aide:2,sec:11,
    lecon:{type:'clavier',surl:['F4','G4','A4','B4'],txt:['Le groupe de 3 touches noires a quatre voisines blanches.','De gauche à droite : Fa, Sol, La, Si.','Fa est juste à gauche du groupe de 3.'],dit:'Après Si, on recommence à Do !'}},
-  {id:'k4',titre:'Les 7 notes',mode:'nom',ds:plage('C4','B4'),oct:'any',aide:1,sec:9,
+  {id:'k4',titre:'Les 7 notes',mode:'nom',ds:plage('C4','B4'),oct:'any',aide:1,sec:10,
    lecon:{type:'clavier',surl:['C4','D4','E4','F4','G4','A4','B4'],txt:['Do Ré Mi Fa Sol La Si, puis on recommence.','Cette fois, le clavier ne t\'aide plus.','Sers-toi des touches noires pour te repérer.'],dit:'Tu connais tout le clavier maintenant.'}},
  ]},
  {num:2,titre:'La clé de sol',sous:'La main droite lit la portée du haut',niveaux:[
-  {id:'s1',titre:'Le Do central',mode:'portee',cle:'sol',ds:plage('C4','E4'),aide:2,sec:10,
+  {id:'s1',titre:'Le Do central',mode:'portee',cle:'sol',ds:plage('C4','E4'),aide:2,sec:11,
    lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4'],rep:['C4'],txt:['Le Do central est au milieu du piano, en face de toi.','Sur la portée, il a sa petite ligne à lui, sous les cinq lignes.','Ré est juste sous la portée. Mi est sur la première ligne.'],dit:'Le Do central, c\'est ta maison. On part toujours de lui.'}},
-  {id:'s2',titre:'La position de Do',mode:'portee',cle:'sol',ds:plage('C4','G4'),aide:1,sec:9,
+  {id:'s2',titre:'La position de Do',mode:'portee',cle:'sol',ds:plage('C4','G4'),aide:1,sec:10,
    lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4','F4','G4'],rep:['C4'],txt:['Pose le pouce droit sur le Do central. Chaque doigt a sa touche.','Sur la portée, chaque note monte d\'un pas : ligne, interligne, ligne.','Une touche à droite sur le piano, c\'est un pas plus haut sur la portée.'],dit:'Cinq doigts, cinq notes. Facile !'}},
-  {id:'s3',titre:'Le repère Sol',mode:'portee',cle:'sol',ds:plage('E4','B4'),aide:1,sec:8,
+  {id:'s3',titre:'Le repère Sol',mode:'portee',cle:'sol',ds:plage('E4','B4'),aide:1,sec:9.5,
    lecon:{type:'portee',cle:'sol',notes:['E4','F4','G4','A4','B4'],rep:['G4'],txt:['La clé de sol s\'enroule autour de la deuxième ligne. Cette ligne, c\'est Sol.','Un pas plus haut, c\'est La. Un pas plus bas, c\'est Fa.','Les noms et les couleurs ne sont plus là. Trouve le Sol, puis compte les pas.'],dit:'Regarde où la clé fait sa boucle.'}},
-  {id:'s4',titre:'Pas et sauts',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:1,sec:8,
+  {id:'s4',titre:'Pas et sauts',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:1,sec:9,
    lecon:{type:'portee',cle:'sol',notes:['C4','E4','G4','B4','D4','F4','A4','C5'],rep:['C4','G4'],txt:['Un pas : de la ligne à l\'interligne. Sur le piano, la touche voisine.','Un saut : de ligne à ligne. Sur le piano, tu sautes une touche.','Pars du repère le plus proche et compte.'],dit:'Ligne, ligne, ligne : ça saute !'}},
-  {id:'s5',titre:'Sans les couleurs',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:0,sec:7,
+  {id:'s5',titre:'Les trois repères',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:0,sec:8.5,
    lecon:{type:'portee',cle:'sol',notes:['C4','G4','C5'],rep:['C4','G4','C5'],txt:['Les notes sont toutes noires, comme dans un vrai livre de piano.','Tes repères : le Do central, le Sol de la clé, et le Do du troisième interligne.','Lis la position, puis joue.'],dit:'Trois repères suffisent pour trouver toutes ces notes.'}},
-  {id:'s6',titre:'Le Do aigu',mode:'portee',cle:'sol',ds:plage('A4','G5'),aide:1,sec:7,
-   lecon:{type:'portee',cle:'sol',notes:['A4','B4','C5','D5','E5','F5','G5'],rep:['C5'],txt:['Le Do aigu est dans le troisième interligne. C\'est un nouveau repère.','Il est une octave plus haut que le Do central : compte 7 touches blanches.','Monte par pas à partir de lui jusqu\'au Sol au-dessus de la portée.'],dit:'On monte tout en haut de la portée.'}},
+  {id:'s6',titre:'Le Do aigu',mode:'portee',cle:'sol',ds:plage('A4','E5'),aide:1,sec:9,
+   lecon:{type:'portee',cle:'sol',notes:['A4','B4','C5','D5','E5'],rep:['C5'],txt:['Le Do aigu est dans le troisième interligne. C\'est un nouveau repère.','Il est une octave plus haut que le Do central : compte 7 touches blanches.','Un pas plus haut, Ré, puis Mi. Un pas plus bas, Si, puis La.'],dit:'On monte vers le haut de la portée.'}},
+  {id:'s7',titre:'Tout en haut',mode:'portee',cle:'sol',ds:plage('C5','G5'),aide:1,sec:8.5,
+   lecon:{type:'portee',cle:'sol',notes:['C5','D5','E5','F5','G5'],rep:['C5'],txt:['Après Mi, il y a Fa, sur la ligne du haut.','Puis Sol, juste au-dessus de la portée.','Pars du Do aigu et monte par pas.'],dit:'On touche le plafond de la portée !'}},
  ]},
  {num:3,titre:'La clé de fa',sous:'La main gauche lit la portée du bas',niveaux:[
-  {id:'f1',titre:'Le repère Fa',mode:'portee',cle:'fa',ds:plage('F3','C4'),aide:2,sec:9,
-   lecon:{type:'portee',cle:'fa',notes:['F3','G3','A3','B3','C4'],rep:['F3','C4'],txt:['La clé de fa a deux points. Entre les deux points passe la quatrième ligne : c\'est Fa.','Le Do central apparaît aussi ici, sur sa petite ligne au-dessus de la portée.','De Fa, monte par pas jusqu\'au Do central.'],dit:'Les deux points de la clé montrent le Fa.'}},
-  {id:'f2',titre:'Main gauche en Do',mode:'portee',cle:'fa',ds:plage('C3','G3'),aide:1,sec:8,
+  {id:'f1',titre:'Le repère Fa',mode:'portee',cle:'fa',ds:plage('F3','A3'),aide:2,sec:11,
+   lecon:{type:'portee',cle:'fa',notes:['F3','G3','A3'],rep:['F3'],txt:['La clé de fa a deux points. Entre les deux points passe la quatrième ligne : c\'est Fa.','Un pas plus haut, Sol. Encore un pas, La.','Ces notes se jouent avec la main gauche.'],dit:'Les deux points de la clé montrent le Fa.'}},
+  {id:'f1b',titre:'Jusqu\'au Do central',mode:'portee',cle:'fa',ds:plage('F3','C4'),aide:1,sec:10,
+   lecon:{type:'portee',cle:'fa',notes:['F3','G3','A3','B3','C4'],rep:['F3','C4'],txt:['De Fa, monte par pas : Sol, La, Si, Do.','Ce Do, c\'est le Do central, sur sa petite ligne au-dessus de la portée.','C\'est la même touche que le Do central de la clé de sol.'],dit:'Le Do central est le pont entre les deux clés.'}},
+  {id:'f2',titre:'Main gauche en Do',mode:'portee',cle:'fa',ds:plage('C3','G3'),aide:1,sec:9.5,
    lecon:{type:'portee',cle:'fa',notes:['C3','D3','E3','F3','G3'],rep:['C3','F3'],txt:['Le Do grave est dans le deuxième interligne de la clé de fa.','Pose le petit doigt gauche dessus. Chaque doigt a sa touche jusqu\'à Sol.','Le Fa de la clé est toujours là pour te repérer.'],dit:'La main gauche entre dans le jeu.'}},
-  {id:'f3',titre:'Clé de fa, sans couleurs',mode:'portee',cle:'fa',ds:plage('C3','C4'),aide:0,sec:7,
+  {id:'f3',titre:'Les repères de la clé de fa',mode:'portee',cle:'fa',ds:plage('C3','C4'),aide:0,sec:8.5,
    lecon:{type:'portee',cle:'fa',notes:['C3','F3','C4'],rep:['C3','F3','C4'],txt:['Toutes les notes sont noires.','Tes repères : le Do grave, le Fa de la clé, le Do central.','Pars du repère le plus proche.'],dit:'Les repères, c\'est ton super-pouvoir.'}},
-  {id:'f4',titre:'Les notes graves',mode:'portee',cle:'fa',ds:plage('F2','C3'),aide:1,sec:7,
-   lecon:{type:'portee',cle:'fa',notes:['F2','G2','A2','B2','C3'],rep:['G2','C3'],txt:['La ligne du bas de la clé de fa, c\'est Sol grave.','Juste sous elle, il y a Fa.','Ces notes sont à gauche du piano, dans les sons graves.'],dit:'Ça gronde comme un ours !'}},
+  {id:'f4',titre:'Le Sol grave',mode:'portee',cle:'fa',ds:plage('G2','C3'),aide:1,sec:9,
+   lecon:{type:'portee',cle:'fa',notes:['G2','A2','B2','C3'],rep:['G2','C3'],txt:['La ligne du bas de la clé de fa, c\'est Sol grave.','Monte par pas : La, Si, puis le Do grave.','Ces notes sont à gauche du piano, dans les sons graves.'],dit:'Ça gronde comme un ours !'}},
+  {id:'f5',titre:'Le Fa grave',mode:'portee',cle:'fa',ds:plage('F2','C3'),aide:1,sec:8.5,
+   lecon:{type:'portee',cle:'fa',notes:['F2','G2','A2','B2','C3'],rep:['F2','G2'],txt:['Sous la ligne du bas, il y a encore une note : Fa.','C\'est un Fa, comme celui de la clé, mais plus grave.','Pars du Sol grave et descends d\'un pas.'],dit:'La note la plus grave du jeu !'}},
  ]},
  {num:4,titre:'La grande portée',sous:'Les deux mains, les deux clés',niveaux:[
-  {id:'g1',titre:'Les deux portées',mode:'portee',cle:'grand',ds:plage('C3','C5'),aide:1,sec:7,
+  {id:'g1',titre:'Les deux portées',mode:'portee',cle:'grand',ds:plage('C3','C5'),aide:1,sec:8.5,
    lecon:{type:'portee',cle:'grand',notes:['C3','F3','C4','G4','C5'],rep:['C3','F3','C4','G4','C5'],txt:['La clé de sol en haut, la clé de fa en bas : c\'est la grande portée.','Les deux portées se touchent au Do central.','Regarde d\'abord la clé, puis la position.'],dit:'Deux clés, cinq repères.'}},
-  {id:'g2',titre:'Toute la grande portée',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:6,
+  {id:'g2',titre:'Toute la grande portée',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:7.5,
    lecon:{type:'portee',cle:'grand',notes:['G2','C3','F3','C4','G4','C5','G5'],rep:['G2','C3','F3','C4','G4','C5'],txt:['Toutes les notes, du Fa grave au Sol aigu.','Aucune aide. Tu as tous tes repères.','Prends ton temps pour lire, puis joue franc.'],dit:'Commence toujours par regarder la clé.'}},
-  {id:'g3',titre:'Le grand défi',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:4.6,n:30,
-   lecon:{type:'portee',cle:'grand',notes:['F2','C4','G5'],rep:['C4'],txt:['Trente notes, plus vite que d\'habitude.','Les points grimpent avec ta série de bonnes réponses.','Trois étoiles ici, c\'est la ceinture noire de la lecture.'],dit:'Lis la note, trouve le repère, joue.'}},
+  {id:'g3',titre:'Le grand défi',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:5.5,n:25,
+   lecon:{type:'portee',cle:'grand',notes:['F2','C4','G5'],rep:['C4'],txt:['Vingt-cinq notes, plus vite que d\'habitude.','Les points grimpent avec ta série de bonnes réponses.','Trois étoiles ici, c\'est la ceinture noire de la lecture.'],dit:'Lis la note, trouve le repère, joue.'}},
  ]},
 ];
 const NIVEAUX=UNITES.flatMap(u=>u.niveaux.map(n=>(n.unite=u,n)));
@@ -406,7 +444,7 @@ NIVEAUX.forEach((n,i)=>{const meme=NIVEAUX.slice(0,i).filter(a=>a.mode===n.mode&
 /* ---------- Données ---------- */
 const CLE='notesExpress.v1';
 const REG0={entree:'micro',vitesse:1,octave:true,son:true,seuil:0.012,ouvert:false};
-const profil=nom=>({nom,etoiles:{},meilleur:{},stats:{},xp:{},serie:0,dernierJour:null});
+const profil=nom=>({nom,tutos:{},etoiles:{},meilleur:{},stats:{},xp:{},serie:0,dernierJour:null});
 function charger(){try{const j=JSON.parse(localStorage.getItem(CLE)||'null');if(j&&j.profils&&j.profils.length){j.reg={...REG0,...j.reg};return j;}}catch(e){}
   return {profils:[profil('Mon profil')],actif:0,reg:{...REG0}};}
 let DATA=charger();
@@ -561,7 +599,7 @@ function bornesClavier(ds,mode){
 }
 
 /* ---------- Navigation ---------- */
-const ECRANS=['accueil','jeu','resultats','micro','notes','reglages'];
+const ECRANS=['accueil','tuto','jeu','resultats','micro','notes','reglages'];
 function montrer(id){ ECRANS.forEach(e=>$('#'+e).hidden=e!==id); window.scrollTo(0,0); if(id!=='micro'&&id!=='jeu') ecoute.onTrame=null; }
 document.querySelectorAll('[data-retour]').forEach(b=>b.onclick=()=>{ if(!$('#micro').hidden) arreterTestMicro(); accueil(); });
 
@@ -593,7 +631,7 @@ function accueil(){
       b.setAttribute('aria-label',`${n.titre}${o?'':' (verrouillé)'}`);
       b.innerHTML=`${i===courant?'<span class="bulle-go">Commencer</span>':''}<span class="rond">${o?(et===3?'★':i+1):'<svg width="26" height="28" viewBox="0 0 26 28"><rect x="3" y="12" width="20" height="15" rx="4" fill="currentColor"/><path d="M7 12V8a6 6 0 0 1 12 0v4" stroke="currentColor" stroke-width="3.4" fill="none"/></svg>'}</span>
         <span class="nom">${n.titre}</span><span class="etoiles">${o?etoilesTxt(et):''}</span>`;
-      b.onclick=()=>{ if(!o){toast('Gagne 2 étoiles au niveau précédent pour ouvrir celui-ci.');return;} ouvrirLecon(i); };
+      b.onclick=()=>{ if(!o){toast('Gagne 2 étoiles au niveau précédent pour ouvrir celui-ci.');return;} if(window.TUTOS&&TUTOS[n.id]&&!(P().tutos||{})[n.id]) lancerTuto(i); else ouvrirLecon(i); };
       sent.append(b);});
     sec.append(sent);ch.append(sec);
   }
@@ -639,15 +677,118 @@ function ouvrirLecon(i){
    <h2>${n.titre}</h2><div class="illus" id="illus"></div>
    <ol class="lecon-txt">${l.txt.map((t,k)=>`<li><b class="num">${k+1}</b><span>${t}</span></li>`).join('')}</ol>
    <div class="dialogue">${mascotte(52)}<div class="dit">${l.dit}</div></div>
-   <div class="rangee" style="margin:10px 0 14px"><button class="btn petit" id="b-ecoute">Écouter ces notes</button>
+   <div class="rangee" style="margin:10px 0 14px">${window.TUTOS&&TUTOS[n.id]?'<button class="btn petit" id="b-tuto">Revoir le tutoriel</button>':''}<button class="btn petit" id="b-ecoute">Écouter ces notes</button>
      <span style="color:var(--muted);margin-left:auto">Défi : <span class="etoiles">${etoilesTxt(et)}</span>${best?` · record ${best}`:''}</span></div>
-   <div class="choix"><button class="btn" id="b-prat">Pratique<small>12 notes, sans chrono</small></button><button class="btn prim" id="b-defi">Défi<small>${n.n||20} notes qui défilent</small></button></div>`;
+   <div class="choix"><button class="btn" id="b-prat">Pratique<small>12 notes, sans chrono</small></button><button class="btn prim" id="b-defi">Défi<small>${n.n||15} notes qui défilent</small></button></div>`;
   v.append(f);v.hidden=false;$('#illus').append(illustration(l));
   const fermer=()=>{v.hidden=true;v.innerHTML='';};
   f.querySelector('.fermer').onclick=fermer;v.onclick=e=>{if(e.target===v)fermer();};
   $('#b-ecoute').onclick=()=>{const ms=(l.type==='clavier'?l.surl:l.notes).map(s=>midiDe(dDe(s)));ms.forEach((m,k)=>setTimeout(()=>jouerNote(m,.7),k*420));};
+  if($('#b-tuto'))$('#b-tuto').onclick=()=>{fermer();lancerTuto(i);};
   $('#b-prat').onclick=()=>{fermer();lancer(n,'pratique');};
   $('#b-defi').onclick=()=>{fermer();lancer(n,'defi');};
+}
+
+/* ---------- Tutoriels ---------- */
+const VOIX={};
+async function chargerVoix(nom){
+  if(nom in VOIX) return VOIX[nom];
+  try{ const r=await fetch('voix/'+nom); if(!r.ok) throw 0; VOIX[nom]=await audio().decodeAudioData(await r.arrayBuffer()); }catch(e){ VOIX[nom]=null; }
+  return VOIX[nom];
+}
+let T=null;
+async function pause(ms){ await new Promise(r=>setTimeout(r,ms)); if(!T||T.annule) throw 'annule'; }
+function dire(buf,texte){
+  const ms=buf?buf.duration*1000:Math.max(1500,texte.split(' ').length*420);
+  ecoute.ignorer(ms+300);
+  if(!buf) return new Promise(r=>setTimeout(r,ms));
+  return new Promise(r=>{const c=audio(),src=c.createBufferSource();src.buffer=buf;src.connect(c.destination);src.onended=r;T.source=src;src.start();});
+}
+async function lancerTuto(i){
+  const n=NIVEAUX[i],etapes=TUTOS[n.id];
+  if(T){T.annule=true;try{T.source&&T.source.stop();}catch(e){}}
+  T={n,i,annule:false,slot:0,attente:null};
+  montrer('tuto');audio();garderEcran();
+  $('#t-titre').textContent=n.titre;$('#t-masc').innerHTML=mascotte(56);$('#t-skip').hidden=true;$('#t-mot').hidden=true;
+  $('#t-points').innerHTML=etapes.map(()=>'<i></i>').join('');
+  const geo=n.mode==='nom'?{H:250,nom:true}:geom(n.cle);T.geo=geo;
+  const rc=$('#t-scene').getBoundingClientRect();
+  const W=Math.round(Math.max(440,Math.min(1000,geo.H*1.15*(rc.width/Math.max(1,rc.height)))));T.W=W;
+  const svg=$('#t-planche');svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${W} ${geo.H}`);
+  T.bandes=svgEl('g');svg.append(T.bandes);
+  if(!geo.nom) dessinerPortee(svg,geo,0,W);
+  T.cles=[...svg.querySelectorAll('text')];
+  T.calque=svgEl('g');svg.append(T.calque);
+  const toutes=etapes.flatMap(e=>e.a.flatMap(a=>a.ns||(a.n?[a.n]:[]))).map(dDe);
+  const [lo,hi]=bornesClavier(n.ds.concat(n.anciens||[],toutes),n.mode);
+  T.clav=clavier($('#t-clavier'),lo,hi,{noms:n.mode==='nom'||n.aide>=1?'tous':'do',onNote:m=>{ecoute.ignorer(900);tutoRecu(m);}});
+  if(R().entree==='micro'&&await ecoute.demarrer()){ ecoute.onNote=m=>tutoRecu(m); ecoute.onTrame=null; }
+  Promise.all(etapes.map((e,k)=>chargerVoix(`${n.id}-${k}.m4a`)));
+  try{
+    for(let k=0;k<etapes.length;k++){ await jouerEtape(etapes[k],k); }
+    await pause(400);
+  }catch(e){ if(e!=='annule') console.warn(e); }
+  if(T&&T.n===n) finTuto();
+}
+function finTuto(){
+  if(!T) return; const {n,i}=T; T.annule=true; try{T.source&&T.source.stop();}catch(e){}
+  if(T.attente) T.attente.res(); T=null;
+  ecoute.onNote=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){}
+  const p=P();(p.tutos||(p.tutos={}))[n.id]=true;sauver();
+  accueil();ouvrirLecon(i);
+}
+$('#t-fermer').onclick=finTuto;$('#t-passer').onclick=finTuto;
+$('#t-skip').onclick=()=>{ if(T&&T.attente) T.attente.res(); };
+function tutoTouches(){ Object.values(T.clav.touches).forEach(t=>t.classList.remove('indice','groupe')); }
+function tutoNote(code,nb){
+  const d=dDe(code),geo=T.geo;let x=(geo.nom?150:210)+T.slot*(geo.nom?115:105);
+  if(x>T.W-50){T.calque.innerHTML='';T.slot=0;x=geo.nom?150:210;}
+  T.slot++;
+  const g=svgEl('g',{transform:`translate(${x},0)`});const inner=svgEl('g',{class:'t-app'});g.append(inner);
+  if(geo.nom) inner.innerHTML=bulleSVG(d,125,{couleur:true});
+  else{ const p=geo.portees.length===1?geo.portees[0]:(d>=28?geo.portees[0]:geo.portees[1]); inner.innerHTML=noteSVG(d,p,{couleur:!nb,nom:!nb}); }
+  T.calque.append(g);
+}
+function tutoTouche(code){ const m=midiDe(dDe(code)),t=T.clav.touches[m]; if(t){t.style.setProperty('--c',coul(dDe(code)));t.classList.add('indice');} ton(fMidi(m),.9,.28); }
+async function jouerEtape(e,k){
+  [...$('#t-points').children].forEach((el,j)=>el.classList.toggle('vu',j<=k));
+  $('#t-dit').textContent=e.dit;tutoTouches();T.bandes.innerHTML='';
+  const buf=await chargerVoix(`${T.n.id}-${k}.m4a`);if(T.annule) throw 'annule';
+  const voix=dire(buf,e.dit);
+  const actions=(async()=>{
+    for(const a of e.a){
+      if(a.t==='toi'){ await voix; await tutoToi(a.n); continue; }
+      if(a.t==='groupes'){ const pcs=a.g===2?[1,3]:[6,8,10]; Object.entries(T.clav.touches).forEach(([m,t])=>{ if(pcs.includes(+m%12)) t.classList.add('groupe'); }); await pause(600); }
+      else if(a.t==='touche'){ tutoTouche(a.n); await pause(750); }
+      else if(a.t==='note'){ tutoNote(a.n,a.nb); await pause(500); }
+      else if(a.t==='monte'){ for(const c of a.ns){ if(a.portee||T.geo.nom) tutoNote(c); tutoTouche(c); await pause(620); } }
+      else if(a.t==='ligne'){ if(!T.geo.nom){ const d=dDe(a.n),p=T.geo.portees.length===1?T.geo.portees[0]:(d>=28?T.geo.portees[0]:T.geo.portees[1]),y=yNote(p,d);
+          T.bandes.append(svgEl('rect',{class:'bande',x:0,y:y-9,width:T.W,height:18,rx:9})); } await pause(300); }
+      else if(a.t==='cle'){ T.cles.forEach(c=>{c.classList.remove('cle-pulse');void c.getBBox();c.classList.add('cle-pulse');}); await pause(300); }
+      else if(a.t==='efface'){ T.calque.innerHTML='';T.slot=0; }
+    }
+  })();
+  await Promise.all([voix,actions]);
+  if(!T||T.annule) throw 'annule';
+  await pause(350);
+}
+async function tutoToi(code){
+  const d=dDe(code);
+  if(!T.geo.nom){ T.calque.innerHTML='';T.slot=2;tutoNote(code,T.n.aide<2); }
+  $('#t-skip').hidden=false;
+  const ok=await new Promise(res=>{ T.attente={d,err:0,res}; });
+  $('#t-skip').hidden=true;
+  if(!T||T.annule) throw 'annule';
+  T.attente=null;
+  if(ok){ $('#t-dit').textContent='Bravo ! C\'est bien '+nomD(d)+'.';$('#t-masc').innerHTML=mascotte(56,'wow');await pause(1400); }
+}
+function tutoRecu(m){
+  if(!T||!T.attente) return;
+  const a=T.attente,ok=(T.n.oct==='any'||!R().octave)?(((m%12)+12)%12===SEMI[a.d%7]):m===midiDe(a.d);
+  if(ok){ T.clav.flash(m,'joue-ok',600); sonOk(); a.res(true); return; }
+  a.err++; T.clav.flash(m,'joue-non'); sonNon();
+  $('#t-dit').textContent=a.err>=2?`Presque. La touche allumée, c'est ${nomD(a.d)}.`:`Tu as joué ${NOMS12[((m%12)+12)%12]}. Essaie encore.`;
+  if(a.err>=2){ const ms=Object.keys(T.clav.touches).map(Number).filter(x=>T.n.oct==='any'?x%12===SEMI[a.d%7]:x===midiDe(a.d)); T.clav.indice(ms); }
 }
 
 /* ---------- Choix des notes (révision espacée) ---------- */
@@ -688,7 +829,7 @@ function lancer(niv,mode){
   const geo=niv.mode==='nom'?{H:250,nom:true}:geom(niv.cle);
   const sc=$('#scene');montrer('jeu');const rc=sc.getBoundingClientRect();
   const W=Math.round(Math.max(440,Math.min(1000,geo.H*1.15*(rc.width/Math.max(1,rc.height)))));
-  G={W,niv,mode,geo,total:mode==='defi'?(niv.n||20):12,crees:0,faits:0,score:0,combo:0,maxCombo:0,bons:0,notes:[],t:0,prochain:0,revoir:{},pret:false,fin:false,
+  G={W,niv,mode,geo,total:mode==='defi'?(niv.n||15):12,crees:0,faits:0,score:0,combo:0,maxCombo:0,bons:0,notes:[],t:0,prochain:0,revoir:{},pret:false,fin:false,
      HIT:geo.nom?110:175,X0:W+50,vitesse:(W+40-(geo.nom?110:175))/(niv.sec/R().vitesse),ecart:Math.max(1.15,niv.sec*.3)/R().vitesse,erreurs:0,sansAide:niv.aide===0,adapt:1,rapides:0};
   garderEcran();
   const svg=$('#planche');svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${W} ${geo.H}`);
@@ -802,14 +943,14 @@ $('#b-quitter').onclick=quitter;
 function resultats(){
   const g=G,niv=g.niv,prec=g.bons/g.total,p=P();
   ecoute.onNote=null;ecoute.onTrame=null;ecoute.arreter();
-  let et=0;if(g.mode==='defi'&&!niv.revision)et=prec>=.95?3:prec>=.85?2:prec>=.7?1:0;
+  let et=0;if(g.mode==='defi'&&!niv.revision)et=prec>=.95?3:prec>=.8?2:prec>=.65?1:0;
   const avant=p.etoiles[niv.id]||0,i=NIVEAUX.indexOf(niv);
   if(g.mode==='defi'&&!niv.revision){ p.etoiles[niv.id]=Math.max(avant,et); p.meilleur[niv.id]=Math.max(p.meilleur[niv.id]||0,g.score); }
   const xp=Math.max(5,Math.round(g.score/150));ajouterXP(xp);sauver();
   const ouvreSuivant=i>=0&&i<NIVEAUX.length-1&&avant<2&&(p.etoiles[niv.id]||0)>=2;
   const titre=g.mode==='pratique'?(prec>=.8?'Belle pratique !':'Bonne pratique !'):et===3?'Parfait !':et===2?'Bravo !':et===1?'Pas mal du tout !':'On réessaie ?';
   const humeur=et>=2||(g.mode==='pratique'&&prec>=.8)?'wow':et===0&&g.mode==='defi'?'triste':'content';
-  const sous=g.mode==='pratique'?(niv.revision?'Tes notes difficiles ont été revues.':'Tu es prête ou prêt pour le défi quand tu veux.'):et<2?'Il faut 2 étoiles (85 %) pour ouvrir le niveau suivant. La pratique aide beaucoup.':ouvreSuivant?'Tu as ouvert le niveau suivant !':'Tu peux viser les 3 étoiles.';
+  const sous=g.mode==='pratique'?(niv.revision?'Tes notes difficiles ont été revues.':'Tu es prête ou prêt pour le défi quand tu veux.'):et<2?'Il faut 2 étoiles (80 %) pour ouvrir le niveau suivant. La pratique aide beaucoup.':ouvreSuivant?'Tu as ouvert le niveau suivant !':'Tu peux viser les 3 étoiles.';
   const revoir=Object.keys(g.revoir).map(Number).sort((a,b)=>a-b);
   $('#res').innerHTML=`${mascotte(96,humeur)}<h1>${titre}</h1>
    ${g.mode==='defi'&&!niv.revision?`<div class="grosses-etoiles">${[0,1,2].map(k=>`<svg viewBox="0 0 100 100" class="${k<et?'e':''}" style="animation-delay:${k*.25}s;${k<et?'':'transform:none'}"><g fill="${k<et?'var(--gold)':'var(--line)'}">${ETOILE}</g></svg>`).join('')}</div>`:''}
