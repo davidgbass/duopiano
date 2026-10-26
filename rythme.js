@@ -94,7 +94,7 @@ function genMesure(vals,c,favoris=[]){
     const m=[];let reste=c;
     if(vals.includes('p')&&Math.random()<.12){return ['p'];}
     while(reste>0){
-      const opts=vals.filter(t=>t!=='p'&&VALEURS[t].t<=reste);
+      const pos=c-reste,opts=vals.filter(t=>t!=='p'&&VALEURS[t].t<=reste&&(t!=='dp'||(c===4&&(pos===0||pos===2))));
       const poids=opts.map(t=>favoris.includes(t)?3:1);let r=Math.random()*poids.reduce((a,b)=>a+b,0),tok=opts[0];
       for(let i=0;i<opts.length;i++){r-=poids[i];if(r<=0){tok=opts[i];break;}}
       m.push(tok);reste-=VALEURS[tok].t;
@@ -124,8 +124,8 @@ function genQuestion(niv){
   if(type==='combien'){
     const tok=choisirTok(niv),d=dureeTok(tok,c4),v=VALEURS[tok];
     const autres=melanger([1,2,3,4].filter(x=>x!==d)).slice(0,2);
-    return {type,tok,texte:tok==='cc'?'Combien de temps durent ces deux croches ?':`Combien de temps dure ${v.art==='le'?'ce':'cette'} ${v.nom} ?`,
-      dessin:{mesures:[[tok]],c:c4,seul:true},choix:melanger([d,...autres]).map(x=>({label:tempsTxt(x),ok:x===d})),
+    return {type,tok,texte:tok==='cc'?'Combien de temps durent ces deux croches ?':tok==='p'?'Dans une mesure à 4 temps, combien de temps dure la pause ?':`Combien de temps dure ${v.art==='le'?'ce':'cette'} ${v.nom} ?`,
+      dessin:tok==='p'?{mesures:[['p']],c:4,chiffre:true,barreFin:true}:{mesures:[[tok]],c:c4,seul:true},choix:melanger([d,...autres]).map(x=>({label:tempsTxt(x),ok:x===d})),
       expl:tok==='cc'?'Deux croches durent 1 temps ensemble.':tok==='p'?'La pause dure toute la mesure : 4 temps ici.':`${v.art==='le'?'Le':'La'} ${v.nom} dure ${tempsTxt(d)}.`};
   }
   if(type==='lequel'){
@@ -163,7 +163,7 @@ function dessinQuestion(q){
   svg.setAttribute('viewBox',`0 40 ${larg} 160`);
   dessinerPortee(svg,geom('sol'),0,larg);
   const x0=d.seul?larg/2-58:90;
-  const r=rythmeSVG(d.mesures,{c:d.c,x0,bw,chiffre:d.chiffre,inconnu:d.inconnu,manque:d.manque,barreFin:!d.seul});
+  const r=rythmeSVG(d.mesures,{c:d.c,x0,bw,chiffre:d.chiffre,inconnu:d.inconnu,manque:d.manque,barreFin:!d.seul||d.barreFin});
   svg.insertAdjacentHTML('beforeend',r.h);
 }
 function lancerQuiz(niv){

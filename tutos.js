@@ -28,7 +28,7 @@ s1:[
  {dit:"Le Do central a sa petite ligne à lui, sous la portée.",a:[{t:'ligne',n:'C4'},{t:'note',n:'C4'}]},
  {dit:"Sur le piano, c'est le Do du milieu, en face de toi.",a:[{t:'touche',n:'C4'}]},
  {dit:"Un pas plus haut, c'est Ré, juste sous la portée. Puis Mi, sur la première ligne.",a:[{t:'monte',ns:['D4','E4'],portee:1}]},
- {dit:"Une touche vers la droite, c'est un pas plus haut sur la portée.",a:[{t:'efface'},{t:'monte',ns:['C4','D4','E4'],portee:1}]},
+ {dit:"Une touche blanche vers la droite, c'est un pas plus haut sur la portée.",a:[{t:'efface'},{t:'monte',ns:['C4','D4','E4'],portee:1}]},
  {dit:"À toi ! Joue le Do central.",a:[{t:'toi',n:'C4'}]}],
 s2:[
  {dit:"Pose le pouce droit sur le Do central.",a:[{t:'note',n:'C4'},{t:'touche',n:'C4'}]},
@@ -44,8 +44,8 @@ s3:[
  {dit:"Il n'y a plus de couleurs. Trouve le Sol, puis compte les pas.",a:[]},
  {dit:"À toi ! Joue le La.",a:[{t:'toi',n:'A4'}]}],
 s4:[
- {dit:"Un pas, c'est passer de la ligne à l'interligne. Sur le piano, c'est la touche voisine.",a:[{t:'monte',ns:['E4','F4'],portee:1}]},
- {dit:"Un saut, c'est passer de ligne à ligne. Sur le piano, on saute une touche.",a:[{t:'efface'},{t:'monte',ns:['E4','G4'],portee:1}]},
+ {dit:"Un pas, c'est passer de la ligne à l'interligne. Sur le piano, c'est la touche blanche voisine.",a:[{t:'monte',ns:['E4','F4'],portee:1}]},
+ {dit:"Un saut, c'est passer de ligne à ligne, ou d'interligne à interligne. Sur le piano, on saute une touche blanche.",a:[{t:'efface'},{t:'monte',ns:['E4','G4'],portee:1}]},
  {dit:"Ligne, ligne, ligne : Mi, Sol, Si.",a:[{t:'efface'},{t:'monte',ns:['E4','G4','B4'],portee:1}]},
  {dit:"Interligne, interligne, interligne : Fa, La, Do.",a:[{t:'monte',ns:['F4','A4','C5'],portee:1}]},
  {dit:"À toi ! Joue le Si.",a:[{t:'toi',n:'B4'}]}],
@@ -58,7 +58,7 @@ s5:[
  {dit:"À toi ! Joue le Do aigu.",a:[{t:'toi',n:'C5'}]}],
 s6:[
  {dit:"Le Do aigu est dans le troisième interligne. Il est sept touches blanches plus haut que le Do central.",a:[{t:'note',n:'C5'},{t:'touche',n:'C4'},{t:'touche',n:'C5'}]},
- {dit:"Un pas plus haut, Ré. Puis Mi, sur la quatrième ligne.",a:[{t:'monte',ns:['D5','E5'],portee:1}]},
+ {dit:"Un pas plus haut, Ré, sur la quatrième ligne. Puis Mi, dans le quatrième interligne.",a:[{t:'monte',ns:['D5','E5'],portee:1}]},
  {dit:"Un pas plus bas que Do, c'est Si. Puis La.",a:[{t:'efface'},{t:'monte',ns:['C5','B4','A4'],portee:1}]},
  {dit:"À toi ! Joue le Ré, juste au-dessus du Do aigu.",a:[{t:'toi',n:'D5'}]}],
 s7:[
@@ -67,7 +67,7 @@ s7:[
  {dit:"Pour les trouver, pars du Do aigu et monte.",a:[{t:'efface'},{t:'monte',ns:['C5','D5','E5','F5','G5'],portee:1}]},
  {dit:"À toi ! Joue le Sol tout en haut.",a:[{t:'toi',n:'G5'}]}],
 f1:[
- {dit:"Voici la clé de fa. Elle sert à la main gauche, pour les sons graves.",a:[{t:'cle'}]},
+ {dit:"Voici la clé de fa. Elle sert surtout à la main gauche, pour les sons graves.",a:[{t:'cle'}]},
  {dit:"Regarde ses deux points. Entre les deux passe la quatrième ligne.",a:[{t:'cle'},{t:'ligne',n:'F3'}]},
  {dit:"Cette ligne, c'est Fa. C'est ton repère dans la clé de fa.",a:[{t:'ligne',n:'F3'},{t:'note',n:'F3'},{t:'touche',n:'F3'}]},
  {dit:"Un pas plus haut, Sol. Encore un pas, La.",a:[{t:'monte',ns:['G3','A3'],portee:1}]},
@@ -101,7 +101,7 @@ f5:[
  {dit:"À toi ! Joue le Fa grave.",a:[{t:'toi',n:'F2'}]}],
 g1:[
  {dit:"Voici la grande portée : la clé de sol en haut, la clé de fa en bas.",a:[{t:'cle'}]},
- {dit:"Les deux portées se touchent au Do central.",a:[{t:'note',n:'C4'},{t:'touche',n:'C4'}]},
+ {dit:"Le Do central est entre les deux portées, sur sa petite ligne.",a:[{t:'note',n:'C4'},{t:'touche',n:'C4'}]},
  {dit:"En haut : le Sol de la clé et le Do aigu. En bas : le Fa de la clé et le Do grave.",a:[{t:'note',n:'G4'},{t:'note',n:'C5'},{t:'note',n:'F3'},{t:'note',n:'C3'}]},
  {dit:"Regarde d'abord la clé. Ensuite, trouve le repère le plus proche.",a:[{t:'cle'}]},
  {dit:"À toi ! Joue le Fa de la clé de fa.",a:[{t:'toi',n:'F3'}]}],

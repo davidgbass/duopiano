@@ -379,7 +379,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <h2>Conseils aux parents</h2>
       <ul class="conseils">
         <li>Visez 10 minutes par jour plutôt qu'une heure la fin de semaine. L'objectif du jour est réglé pour ça.</li>
-        <li>La méthode suit l'ordre des méthodes Faber et Alfred : le clavier d'abord, puis trois notes repères (le Do central, le Sol de la clé de sol, le Fa de la clé de fa), puis la lecture par pas et par sauts à partir de ces repères.</li>
+        <li>La lecture s'inspire de l'approche par repères de la méthode Faber (Piano Adventures) : le clavier d'abord, puis des notes repères (le Do central, le Sol de la clé de sol, le Fa de la clé de fa), puis la lecture par pas et par sauts à partir de ces repères.</li>
         <li>Les couleurs et les noms sur les notes sont des aides qui disparaissent au fil des niveaux. C'est voulu : l'enfant apprend à lire la position, pas la couleur.</li>
         <li>Un niveau s'ouvre avec 2 étoiles, soit 80 % de notes justes du premier coup dans le défi. Si ça bloque, la pratique sans chrono et la révision aident.</li>
         <li>L'unité « Les valeurs de notes » est ouverte dès le départ. On peut alterner entre la lecture des notes et le rythme. Dans le défi de rythme, n'importe quelle touche compte : on vérifie seulement le moment où la note commence.</li>
@@ -429,11 +429,11 @@ const UNITES=[
   {id:'s1',titre:'Le Do central',mode:'portee',cle:'sol',ds:plage('C4','E4'),aide:2,sec:11,
    lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4'],rep:['C4'],txt:['Le Do central est au milieu du piano, en face de toi.','Sur la portée, il a sa petite ligne à lui, sous les cinq lignes.','Ré est juste sous la portée. Mi est sur la première ligne.'],dit:'Le Do central, c\'est ta maison. On part toujours de lui.'}},
   {id:'s2',titre:'La position de Do',mode:'portee',cle:'sol',ds:plage('C4','G4'),aide:1,sec:10,
-   lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4','F4','G4'],rep:['C4'],txt:['Pose le pouce droit sur le Do central. Chaque doigt a sa touche.','Sur la portée, chaque note monte d\'un pas : ligne, interligne, ligne.','Une touche à droite sur le piano, c\'est un pas plus haut sur la portée.'],dit:'Cinq doigts, cinq notes. Facile !'}},
+   lecon:{type:'portee',cle:'sol',notes:['C4','D4','E4','F4','G4'],rep:['C4'],txt:['Pose le pouce droit sur le Do central. Chaque doigt a sa touche.','Sur la portée, chaque note monte d\'un pas : ligne, interligne, ligne.','Une touche blanche vers la droite sur le piano, c\'est un pas plus haut sur la portée.'],dit:'Cinq doigts, cinq notes. Facile !'}},
   {id:'s3',titre:'Le repère Sol',mode:'portee',cle:'sol',ds:plage('E4','B4'),aide:1,sec:9.5,
    lecon:{type:'portee',cle:'sol',notes:['E4','F4','G4','A4','B4'],rep:['G4'],txt:['La clé de sol s\'enroule autour de la deuxième ligne. Cette ligne, c\'est Sol.','Un pas plus haut, c\'est La. Un pas plus bas, c\'est Fa.','Les noms et les couleurs ne sont plus là. Trouve le Sol, puis compte les pas.'],dit:'Regarde où la clé fait sa boucle.'}},
   {id:'s4',titre:'Pas et sauts',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:1,sec:9,
-   lecon:{type:'portee',cle:'sol',notes:['C4','E4','G4','B4','D4','F4','A4','C5'],rep:['C4','G4'],txt:['Un pas : de la ligne à l\'interligne. Sur le piano, la touche voisine.','Un saut : de ligne à ligne. Sur le piano, tu sautes une touche.','Pars du repère le plus proche et compte.'],dit:'Ligne, ligne, ligne : ça saute !'}},
+   lecon:{type:'portee',cle:'sol',notes:['C4','E4','G4','B4','D4','F4','A4','C5'],rep:['C4','G4'],txt:['Un pas : de la ligne à l\'interligne, ou l\'inverse. Sur le piano, la touche blanche voisine.','Un saut : de ligne à ligne, ou d\'interligne à interligne. Sur le piano, tu sautes une touche blanche.','Pars du repère le plus proche et compte.'],dit:'Ligne, ligne, ligne : ça saute !'}},
   {id:'s5',titre:'Les trois repères',mode:'portee',cle:'sol',ds:plage('C4','C5'),aide:0,sec:8.5,
    lecon:{type:'portee',cle:'sol',notes:['C4','G4','C5'],rep:['C4','G4','C5'],txt:['Les notes sont toutes noires, comme dans un vrai livre de piano.','Tes repères : le Do central, le Sol de la clé, et le Do du troisième interligne.','Lis la position, puis joue.'],dit:'Trois repères suffisent pour trouver toutes ces notes.'}},
   {id:'s6',titre:'Le Do aigu',mode:'portee',cle:'sol',ds:plage('A4','E5'),aide:1,sec:9,
@@ -443,21 +443,21 @@ const UNITES=[
  ]},
  {num:3,titre:'Les valeurs de notes',sous:'Combien de temps dure chaque note. Cette unité est ouverte dès le départ.',niveaux:[
   {id:'r1',titre:'Noire et blanche',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b'],nouv:['n','b'],chiffres:[4],bpm:66,aide:2,sec:8,
-   lecon:{type:'rythme',m:'n n b | b n n',c:4,txt:['La noire a une tête pleine et une tige. Elle dure 1 temps.','La blanche a une tête vide. Elle dure 2 temps.','Le 4 en haut veut dire 4 temps par mesure.'],dit:'Noire, noire, blanche : un, deux, trois, quatre.'}},
+   lecon:{type:'rythme',m:'n n b | b n n',c:4,txt:['La noire a une tête pleine et une tige. Elle dure 1 temps.','La blanche a une tête vide. Elle dure 2 temps.','Le 4 du haut veut dire 4 temps par mesure. Le 4 du bas veut dire que la noire vaut 1 temps.'],dit:'Noire, noire, blanche : un, deux, trois, quatre.'}},
   {id:'r2',titre:'La ronde',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','r'],nouv:['r'],chiffres:[4],bpm:66,aide:2,sec:8,
    lecon:{type:'rythme',m:'r | b b',c:4,txt:['La ronde est une tête vide, sans tige.','Elle dure 4 temps : toute une mesure à 4 temps.','Une ronde vaut deux blanches, ou quatre noires.'],dit:'La ronde, c\'est la plus longue.'}},
   {id:'r3',titre:'La blanche pointée',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','bp','r'],nouv:['bp'],chiffres:[3,4],bpm:66,aide:2,sec:8,
    lecon:{type:'rythme',m:'bp | n b',c:3,txt:['Le point après une note l\'allonge de la moitié.','La blanche pointée dure 3 temps.','Le 3 en haut veut dire 3 temps par mesure.'],dit:'Deux temps, plus la moitié : trois temps.'}},
   {id:'r4',titre:'Les silences',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','bp','r','s','dp','p'],nouv:['s','dp','p'],chiffres:[4],bpm:66,aide:2,sec:8,
-   lecon:{type:'rythme',m:'n s n s | b dp',c:4,txt:['Un silence, c\'est un temps où on ne joue pas. On compte quand même.','Le soupir dure 1 temps. La demi-pause dure 2 temps, posée sur la ligne du milieu.','La pause dure toute la mesure. Elle pend sous la quatrième ligne.'],dit:'Chut ! Les silences comptent aussi.'}},
+   lecon:{type:'rythme',m:'n s n s | b dp',c:4,txt:['Un silence, c\'est un moment où on ne joue pas. On compte quand même.','Le soupir dure 1 temps. La demi-pause dure 2 temps, posée sur la ligne du milieu.','La pause dure toute la mesure. Elle pend sous la quatrième ligne.'],dit:'Chut ! Les silences comptent aussi.'}},
   {id:'r5',titre:'Les croches',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','bp','r','s','dp','p','cc'],nouv:['cc'],chiffres:[4,3],bpm:60,aide:2,sec:8,
    lecon:{type:'rythme',m:'cc cc b | n cc n n',c:4,txt:['Les croches vont souvent par deux, attachées par une barre.','Deux croches durent 1 temps ensemble.','On compte : un et, deux et.'],dit:'Deux sons dans un seul temps.'}},
   {id:'r6',titre:'Les mesures',mode:'rythme',cle:'sol',ds:[dDe('G4')],vals:['n','b','bp','r','s','dp','p','cc'],nouv:[],chiffres:[2,3,4],bpm:66,aide:2,sec:8,
-   lecon:{type:'rythme',m:'n n | b',c:2,txt:['Le chiffre du haut dit combien de temps il y a dans chaque mesure.','Les barres de mesure séparent les mesures.','Pour vérifier une mesure, additionne les temps.'],dit:'Deux, trois ou quatre temps : compte, et tu sauras.'}},
+   lecon:{type:'rythme',m:'n n | b',c:2,txt:['Le chiffre du haut dit combien de temps il y a dans chaque mesure.','Le chiffre du bas est toujours 4 dans ce jeu : la noire vaut 1 temps.','Les barres de mesure séparent les mesures. Pour vérifier une mesure, additionne les temps.'],dit:'Deux, trois ou quatre temps : compte, et tu sauras.'}},
  ]},
  {num:4,titre:'La clé de fa',sous:'La main gauche lit la portée du bas',niveaux:[
   {id:'f1',titre:'Le repère Fa',mode:'portee',cle:'fa',ds:plage('F3','A3'),aide:2,sec:11,
-   lecon:{type:'portee',cle:'fa',notes:['F3','G3','A3'],rep:['F3'],txt:['La clé de fa a deux points. Entre les deux points passe la quatrième ligne : c\'est Fa.','Un pas plus haut, Sol. Encore un pas, La.','Ces notes se jouent avec la main gauche.'],dit:'Les deux points de la clé montrent le Fa.'}},
+   lecon:{type:'portee',cle:'fa',notes:['F3','G3','A3'],rep:['F3'],txt:['La clé de fa a deux points. Entre les deux points passe la quatrième ligne : c\'est Fa.','Un pas plus haut, Sol. Encore un pas, La.','Ces notes se jouent surtout avec la main gauche.'],dit:'Les deux points de la clé montrent le Fa.'}},
   {id:'f1b',titre:'Jusqu\'au Do central',mode:'portee',cle:'fa',ds:plage('F3','C4'),aide:1,sec:10,
    lecon:{type:'portee',cle:'fa',notes:['F3','G3','A3','B3','C4'],rep:['F3','C4'],txt:['De Fa, monte par pas : Sol, La, Si, Do.','Ce Do, c\'est le Do central, sur sa petite ligne au-dessus de la portée.','C\'est la même touche que le Do central de la clé de sol.'],dit:'Le Do central est le pont entre les deux clés.'}},
   {id:'f2',titre:'Main gauche en Do',mode:'portee',cle:'fa',ds:plage('C3','G3'),aide:1,sec:9.5,
@@ -471,7 +471,7 @@ const UNITES=[
  ]},
  {num:5,titre:'La grande portée',sous:'Les deux mains, les deux clés',niveaux:[
   {id:'g1',titre:'Les deux portées',mode:'portee',cle:'grand',ds:plage('C3','C5'),aide:1,sec:8.5,
-   lecon:{type:'portee',cle:'grand',notes:['C3','F3','C4','G4','C5'],rep:['C3','F3','C4','G4','C5'],txt:['La clé de sol en haut, la clé de fa en bas : c\'est la grande portée.','Les deux portées se touchent au Do central.','Regarde d\'abord la clé, puis la position.'],dit:'Deux clés, cinq repères.'}},
+   lecon:{type:'portee',cle:'grand',notes:['C3','F3','C4','G4','C5'],rep:['C3','F3','C4','G4','C5'],txt:['La clé de sol en haut, la clé de fa en bas : c\'est la grande portée.','Le Do central est entre les deux portées, sur sa petite ligne.','Regarde d\'abord la clé, puis la position.'],dit:'Deux clés, cinq repères.'}},
   {id:'g2',titre:'Toute la grande portée',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:7.5,
    lecon:{type:'portee',cle:'grand',notes:['G2','C3','F3','C4','G4','C5','G5'],rep:['G2','C3','F3','C4','G4','C5'],txt:['Toutes les notes, du Fa grave au Sol aigu.','Aucune aide. Tu as tous tes repères.','Prends ton temps pour lire, puis joue franc.'],dit:'Commence toujours par regarder la clé.'}},
   {id:'g3',titre:'Le grand défi',mode:'portee',cle:'grand',ds:plage('F2','G5'),aide:0,sec:5.5,n:25,
@@ -590,6 +590,8 @@ const yNote=(p,d)=>p.bas-(d-REF[p.cle])*ESP;
 function porteePour(geo,d,niv){ if(geo.portees.length===1) return geo.portees[0]; if(d>28) return geo.portees[0]; if(d<28) return geo.portees[1]; return Math.random()<.6?geo.portees[0]:geo.portees[1]; }
 function dessinerPortee(svg,geo,x0,x1,opts={}){
   let h='';
+  if(geo.portees.length===2){const a=geo.portees[0].bas-8*ESP,b=geo.portees[1].bas,m=(a+b)/2;
+    h+=`<path d="M${x0+15} ${a} C${x0+3} ${a+22} ${x0+15} ${m-32} ${x0+3} ${m} C${x0+15} ${m+32} ${x0+3} ${b-22} ${x0+15} ${b}" fill="none" stroke="var(--staff)" stroke-width="3.2" stroke-linecap="round"/>`;x0+=20;}
   for(const p of geo.portees){
     for(let k=0;k<5;k++){const y=p.bas-k*2*ESP;h+=`<line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}" stroke="var(--staff)" stroke-width="1.6"/>`;}
     if(p.cle==='sol') h+=`<text x="${x0+10}" y="${p.bas}" font-family="var(--f-music)" font-size="${opts.fs||80}" fill="var(--staff)">\u{1D11E}</text>`;
@@ -889,7 +891,7 @@ function explication(d){
   let best=REPERES[0];for(const r of REPERES)if(Math.abs(r[0]-d)<Math.abs(best[0]-d))best=r;
   const k=d-best[0];if(!k) return `${nomD(d)} : c'est le ${best[1]}`;
   const pas=Math.abs(k)===1?'un pas':Math.abs(k)===2?'un saut':Math.abs(k)+' pas';
-  return `${nomD(d)} : ${pas} ${k>0?'au-dessus':'sous'} le ${best[1]}`;
+  return `${nomD(d)} : ${pas} ${k>0?'au-dessus du':'sous le'} ${best[1]}`;
 }
 function lancer(niv,mode){
   if(niv.mode==='rythme') return mode==='defi'?lancerLecture(niv):lancerQuiz(niv);
