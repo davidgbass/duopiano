@@ -67,7 +67,6 @@ function miniSymbole(tok){
 function animerRythme(svgParent,ry,o={}){
   const bpm=o.bpm||66,beat=60/bpm,total=ry.nb*ry.c,G4=dDe('G4');
   const calque=svgEl('g');svgParent.append(calque);
-  const curseur=svgEl('line',{x1:0,x2:0,y1:70,y2:178,stroke:'var(--accent)','stroke-width':3,opacity:.75});calque.append(curseur);
   const nums=svgEl('g');calque.append(nums);
   return new Promise(res=>{
     const t0=performance.now()+150;let fini=false,prochain=0,prochainNum=0;
@@ -80,7 +79,6 @@ function animerRythme(svgParent,ry,o={}){
         if(it.son){ton(fMidi(midiDe(G4)),Math.max(.25,(it.tok==='cc'?.5:(it.dur||1))*beat*.95),.26);ecoute.ignorer(400);}
         const g=svgParent.querySelector(`.sym[data-i="${it.g}"]`);if(g){g.style.setProperty('--ry','var(--accent)');setTimeout(()=>g.style.removeProperty('--ry'),Math.max(300,(it.dur||.5)*beat*1000));}
         prochain++;}
-      if(b>=0) curseur.setAttribute('x1',ry.xDe(Math.min(b,total-.001))),curseur.setAttribute('x2',ry.xDe(Math.min(b,total-.001)));
       if(b>=total+.2){fini=true;setTimeout(()=>{calque.remove();res();},250);return;}
       requestAnimationFrame(tic);
     };
@@ -233,7 +231,6 @@ function ligneSuivante(){
   const beat=60/G.bpm;
   G.ligne={r,c,beat,svg,attendus:r.items.filter(i=>i.son).map(i=>({...i,fait:null})),silences:r.items.filter(i=>!i.son),bruts:[]};
   G.total+=G.ligne.attendus.length;
-  const curseur=svgEl('line',{x1:r.xDe(0),x2:r.xDe(0),y1:70,y2:180,stroke:'var(--accent)','stroke-width':3,opacity:.8});svg.append(curseur);G.ligne.curseur=curseur;
   // décompte d'une mesure, puis le métronome continue sur chaque temps jusqu'à la fin de la ligne
   const mot=$('#mot');mot.hidden=false;
   const debut=performance.now()+700;G.ligne.t0=debut+c*beat*1000;G.enCours=true;
@@ -243,8 +240,7 @@ function ligneSuivante(){
   setTimeout(()=>{if(G&&!G.fin)mot.hidden=true;},700+c*beat*1000);
   const fin=G.ligne.t0+(r.nb*c)*beat*1000+Math.max(450,G.attente+50);
   const tic=()=>{ if(!G||G.fin||!G.lecture) return;
-    const now=performance.now(),b=(now-G.ligne.t0)/1000/beat;
-    if(b>=0){const x=r.xDe(Math.min(b,r.nb*c-.001));curseur.setAttribute('x1',x);curseur.setAttribute('x2',x);}
+    const now=performance.now();
     // notes manquées
     for(const a of G.ligne.attendus) if(!a.fait&&now>G.ligne.t0+a.t*beat*1000+G.attente) marquer(a,'rate');
     if(now>=fin){finLigne();return;}
