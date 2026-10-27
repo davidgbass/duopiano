@@ -535,6 +535,16 @@ function jouerNote(m,dur=1.1){ if(!R().son) return; ton(fMidi(m),dur,.28); ecout
 function sonOk(){ if(!R().son) return; ton(1318.5,.12,.12,'sine',0,[1]);ton(1760,.18,.12,'sine',.07,[1]); ecoute.ignorer(320); }
 function sonNon(){ if(!R().son) return; ton(196,.16,.1,'triangle',0,[1]); ecoute.ignorer(320); }
 function sonFin(){ if(!R().son) return; [523.25,659.25,783.99,1046.5].forEach((f,i)=>ton(f,.3,.14,'sine',i*.11,[1,.2])); }
+// Clic de métronome : un souffle de bruit filtré de 25 ms, sans hauteur, que le filtre anti-voix ne prend jamais pour une note.
+let METRO=[];
+function clicMetro(fort,quand){
+  const c=audio(),t=Math.max(c.currentTime,quand),n=Math.round(c.sampleRate*.025);
+  if(!clicMetro.b||clicMetro.b.sampleRate!==c.sampleRate){const b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(n/5));clicMetro.b=b;}
+  const src=c.createBufferSource(),bp=c.createBiquadFilter(),g=c.createGain();src.buffer=clicMetro.b;
+  bp.type='bandpass';bp.frequency.value=fort?3200:2200;bp.Q.value=1.2;g.gain.value=fort?.9:.55;
+  src.connect(bp).connect(g).connect(c.destination);src.start(t);METRO.push(src);src.onended=()=>{METRO=METRO.filter(x=>x!==src);};
+}
+function arreterMetro(){ METRO.forEach(x=>{try{x.stop();}catch(e){}});METRO=[]; }
 async function garderEcran(){ try{ garderEcran.v=await navigator.wakeLock?.request('screen'); }catch(e){} }
 
 /* ---------- Écoute (micro + détection de hauteur YIN) ---------- */
@@ -596,7 +606,7 @@ const ecoute={actif:false,histo:[],suite:[],vols:[],arme:false,ignoreJusqua:0,on
     this.arme=false;
     const e=this.ecarts||(this.ecarts=[]);e.push(this.moy-m);if(e.length>25)e.shift();
     if(e.length>=5){ const t=[...e].sort((a,b)=>a-b);this.accord=t[t.length>>1];R().accord=this.accord; }
-    this.onNote&&this.onNote(m);
+    this.onNote&&this.onNote(m,this.armeDepuis-25);   // 2e argument : le moment de l'attaque
   }
 };
 function seuilDeSens(v){ return 0.05*Math.pow(0.0025/0.05,(v-1)/99); }   // 1 = peu sensible, 100 = très sensible
@@ -1027,7 +1037,7 @@ function boucle(ts){
   requestAnimationFrame(boucle);
 }
 function verifierFin(){ if(G.faits>=G.total&&!G.fin){ G.fin=true; setTimeout(resultats,650); } }
-function quitter(){ if(G){G.fin=true;} G=null; ecoute.onNote=null; ecoute.onTrame=null; ecoute.onAttaque=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){} accueil(); }
+function quitter(){ if(G){G.fin=true;} G=null; arreterMetro(); ecoute.onNote=null; ecoute.onTrame=null; ecoute.onAttaque=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){} accueil(); }
 $('#b-quitter').onclick=quitter;$('#q-quitter').onclick=quitter;
 
 /* ---------- Résultats ---------- */

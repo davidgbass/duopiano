@@ -203,7 +203,7 @@ function repondre(ch,b){
 function lancerLecture(niv){
   const geo=geom('sol');
   G={niv,mode:'defi',lecture:true,lignes:4,li:0,total:0,bons:0,score:0,combo:0,maxCombo:0,faits:0,revoir:{},fin:false,extras:0,geo,
-     bpm:Math.round((niv.bpm||66)*R().vitesse)};
+     bpm:Math.round((niv.bpm||66)*R().vitesse),attente:200};
   montrer('jeu');garderEcran();
   const rc=$('#scene').getBoundingClientRect();
   G.W=Math.round(Math.max(560,Math.min(1100,geo.H*1.15*(rc.width/Math.max(1,rc.height)))));
@@ -214,7 +214,8 @@ function lancerLecture(niv){
   const dec=R().decalage||(R().decalage={});G.decal={micro:dec.micro??.06,ecran:dec.ecran??.02};
   (async()=>{
     if(R().entree==='micro'){const ok=await ecoute.demarrer();
-      if(ok){ecoute.onNote=null;ecoute.onAttaque=t=>frappe(t,'micro');ecoute.onTrame=({rms})=>{$('#vu').style.width=Math.min(100,rms/(R().seuil*4)*100)+'%';};$('#entendu-txt').textContent='J\'écoute…';}
+      if(ok){ecoute.onAttaque=null;ecoute.onNote=(m,t)=>frappe(t,'micro');G.attente=650;   // une attaque compte seulement si une vraie note de piano suit
+        ecoute.onTrame=({rms})=>{$('#vu').style.width=Math.min(100,rms/(R().seuil*4)*100)+'%';};$('#entendu-txt').textContent='J\'écoute…';}
       else{$('#entendu-txt').textContent='Micro indisponible';toast('Le micro n\'est pas accessible. Tu peux jouer sur le clavier à l\'écran.',4200);}
     } else $('#entendu-txt').textContent='Clavier à l\'écran';
     ligneSuivante();
@@ -233,17 +234,19 @@ function ligneSuivante(){
   G.ligne={r,c,beat,svg,attendus:r.items.filter(i=>i.son).map(i=>({...i,fait:null})),silences:r.items.filter(i=>!i.son),bruts:[]};
   G.total+=G.ligne.attendus.length;
   const curseur=svgEl('line',{x1:r.xDe(0),x2:r.xDe(0),y1:70,y2:180,stroke:'var(--accent)','stroke-width':3,opacity:.8});svg.append(curseur);G.ligne.curseur=curseur;
-  // décompte audible d'une mesure, puis le curseur part
+  // décompte d'une mesure, puis le métronome continue sur chaque temps jusqu'à la fin de la ligne
   const mot=$('#mot');mot.hidden=false;
   const debut=performance.now()+700;G.ligne.t0=debut+c*beat*1000;G.enCours=true;
-  for(let k=0;k<c;k++) setTimeout(()=>{if(!G||G.fin)return;mot.textContent=k+1;ton(k?880:1320,.08,.14,'sine',0,[1]);ecoute.ignorer(160);},700+k*beat*1000);
+  const a0=audio().currentTime+.7;
+  for(let k=0;k<c*(r.nb+1);k++) clicMetro(k%c===0,a0+k*beat);
+  for(let k=0;k<c;k++) setTimeout(()=>{if(!G||G.fin)return;mot.textContent=k+1;},700+k*beat*1000);
   setTimeout(()=>{if(G&&!G.fin)mot.hidden=true;},700+c*beat*1000);
-  const fin=G.ligne.t0+(r.nb*c)*beat*1000+450;
+  const fin=G.ligne.t0+(r.nb*c)*beat*1000+Math.max(450,G.attente+50);
   const tic=()=>{ if(!G||G.fin||!G.lecture) return;
     const now=performance.now(),b=(now-G.ligne.t0)/1000/beat;
     if(b>=0){const x=r.xDe(Math.min(b,r.nb*c-.001));curseur.setAttribute('x1',x);curseur.setAttribute('x2',x);}
     // notes manquées
-    for(const a of G.ligne.attendus) if(!a.fait&&now>G.ligne.t0+a.t*beat*1000+200) marquer(a,'rate');
+    for(const a of G.ligne.attendus) if(!a.fait&&now>G.ligne.t0+a.t*beat*1000+G.attente) marquer(a,'rate');
     if(now>=fin){finLigne();return;}
     requestAnimationFrame(tic);};
   requestAnimationFrame(tic);
