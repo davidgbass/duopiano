@@ -603,7 +603,7 @@ const ecoute={actif:false,histo:[],suite:[],vols:[],arme:false,ignoreJusqua:0,on
     const m=fixe(4);
     if(!this.arme||m==null) return;
     const v=vo.slice(-4);if(v[3]>v[0]*1.2&&v[3]>this.pic*.5) return;   // le volume monte : une voix, pas une corde frappée
-    this.arme=false;
+    this.arme=false;this.volNote=v[3];
     const e=this.ecarts||(this.ecarts=[]);e.push(this.moy-m);if(e.length>25)e.shift();
     if(e.length>=5){ const t=[...e].sort((a,b)=>a-b);this.accord=t[t.length>>1];R().accord=this.accord; }
     this.onNote&&this.onNote(m,this.armeDepuis-25);   // 2e argument : le moment de l'attaque
