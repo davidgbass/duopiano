@@ -371,6 +371,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <div class="segment" id="r-entree"><button data-v="micro">Piano et micro</button><button data-v="ecran">Clavier à l'écran</button></div></div>
       <div class="champ"><label>Vitesse des défis</label>
         <div class="segment" id="r-vitesse"><button data-v="0.75">Lente</button><button data-v="1">Normale</button><button data-v="1.3">Rapide</button></div></div>
+      <div class="champ"><label>Pulsation dans Lis et joue</label>
+        <div class="segment" id="r-pulse"><button data-v="batterie">Batterie</button><button data-v="clic">Clic simple</button></div></div>
       <label class="case"><input type="checkbox" id="r-octave"><span><b>Exiger la bonne octave sur la portée.</b><br><span style="color:var(--muted)">Décoche si le micro confond souvent un Do avec le Do d'à côté.</span></span></label>
       <label class="case"><input type="checkbox" id="r-son"><span><b>Sons du jeu</b></span></label>
       <label class="case"><input type="checkbox" id="r-ouvert"><span><b>Ouvrir tous les niveaux</b><br><span style="color:var(--muted)">Pour un parent qui veut tout essayer.</span></span></label>
@@ -382,7 +384,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <li>La lecture s'inspire de l'approche par repères de la méthode Faber (Piano Adventures) : le clavier d'abord, puis des notes repères (le Do central, le Sol de la clé de sol, le Fa de la clé de fa), puis la lecture par pas et par sauts à partir de ces repères.</li>
         <li>Les couleurs et les noms sur les notes sont des aides qui disparaissent au fil des niveaux. C'est voulu : l'enfant apprend à lire la position, pas la couleur.</li>
         <li>Un niveau s'ouvre avec 2 étoiles, soit 80 % de notes justes du premier coup dans le défi. Si ça bloque, la pratique sans chrono et la révision aident.</li>
-        <li>L'unité « Les valeurs de notes » est ouverte dès le départ. On peut alterner entre la lecture des notes et le rythme. Dans le défi de rythme, n'importe quelle touche compte : on vérifie seulement le moment où la note commence.</li>
+        <li>L'unité « Les valeurs de notes » est ouverte dès le départ. On peut alterner entre la lecture des notes et le rythme. Dans le défi de rythme, n'importe quelle touche compte : on vérifie seulement le moment où la note commence. Il suffit de jouer sur le bon temps, à quelques dixièmes de seconde près.</li>
         <li>Chaque niveau commence par un tutoriel animé de moins d'une minute, qui se termine par une note à jouer. On peut le revoir depuis la fiche du niveau.</li>
         <li>Les doigts comptent aussi : pouce sur le Do, un doigt par touche, poignet souple.</li>
       </ul>
@@ -485,7 +487,7 @@ NIVEAUX.forEach((n,i)=>{const meme=NIVEAUX.slice(0,i).filter(a=>a.mode===n.mode&
 
 /* ---------- Données ---------- */
 const CLE='notesExpress.v1';
-const REG0={entree:'micro',vitesse:1,octave:true,son:true,seuil:0.012,ouvert:false};
+const REG0={entree:'micro',vitesse:1,pulse:'batterie',octave:true,son:true,seuil:0.012,ouvert:false};
 const profil=nom=>({nom,tutos:{},etoiles:{},meilleur:{},stats:{},xp:{},serie:0,dernierJour:null});
 function charger(){try{const j=JSON.parse(localStorage.getItem(CLE)||'null');if(j&&j.profils&&j.profils.length){j.reg={...REG0,...j.reg};return j;}}catch(e){}
   return {profils:[profil('Mon profil')],actif:0,reg:{...REG0}};}
@@ -543,6 +545,21 @@ function clicMetro(fort,quand){
   const src=c.createBufferSource(),bp=c.createBiquadFilter(),g=c.createGain();src.buffer=clicMetro.b;
   bp.type='bandpass';bp.frequency.value=fort?3200:2200;bp.Q.value=1.2;g.gain.value=fort?.9:.55;
   src.connect(bp).connect(g).connect(c.destination);src.start(t);METRO.push(src);src.onended=()=>{METRO=METRO.filter(x=>x!==src);};
+}
+// Batterie : charleston sur chaque croche, grosse caisse sur le 1 (et le 3 en 4/4), caisse claire sur les autres temps.
+// Tout est du bruit filtré, sans hauteur, comme le clic : le filtre anti-voix ne le prend jamais pour une note.
+function souffle(quand,type,f,Q,gain,dur){
+  const c=audio(),t=Math.max(c.currentTime,quand),n=Math.round(c.sampleRate*dur),cle=c.sampleRate+':'+dur,B=souffle.b||(souffle.b={});
+  if(!B[cle]){const b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(n/5));B[cle]=b;}
+  const src=c.createBufferSource(),fl=c.createBiquadFilter(),g=c.createGain();src.buffer=B[cle];
+  fl.type=type;fl.frequency.value=f;fl.Q.value=Q;g.gain.value=gain;
+  src.connect(fl).connect(g).connect(c.destination);src.start(t);METRO.push(src);src.onended=()=>{METRO=METRO.filter(x=>x!==src);};
+}
+function pulsation(k,c,quand,beat){
+  if(R().pulse==='clic'){clicMetro(k%c===0,quand);return;}
+  const tps=k%c;
+  if(tps===0||(c===4&&tps===2)) souffle(quand,'lowpass',150,1,tps===0?4:3,.14); else souffle(quand,'bandpass',1800,.8,.7,.12);
+  souffle(quand,'highpass',7000,.7,.35,.03); souffle(quand+beat/2,'highpass',7000,.7,.25,.03);
 }
 function arreterMetro(){ METRO.forEach(x=>{try{x.stop();}catch(e){}});METRO=[]; }
 async function garderEcran(){ try{ garderEcran.v=await navigator.wakeLock?.request('screen'); }catch(e){} }
@@ -1119,7 +1136,7 @@ function reglages(){
   const pr=$('#r-profils');pr.innerHTML='';DATA.profils.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.nom;b.setAttribute('aria-pressed',i===DATA.actif);b.onclick=()=>{DATA.actif=i;sauver();reglages();};pr.append(b);});
   $('#r-suppr').hidden=DATA.profils.length<2;
   const seg=(id,v)=>$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(v))));
-  seg('#r-entree',r.entree);seg('#r-vitesse',r.vitesse);
+  seg('#r-entree',r.entree);seg('#r-vitesse',r.vitesse);seg('#r-pulse',r.pulse||'batterie');
   $('#r-octave').checked=r.octave;$('#r-son').checked=r.son;$('#r-ouvert').checked=r.ouvert;
 }
 $('#r-nom').oninput=e=>{P().nom=e.target.value.trim()||'Joueur';sauver();};
@@ -1131,6 +1148,7 @@ $('#r-suppr').onclick=e=>confirmerSur(e.currentTarget,'Appuie encore pour retire
 $('#r-reset').onclick=e=>confirmerSur(e.currentTarget,'Appuie encore pour tout effacer',()=>{const n=P().nom;DATA.profils[DATA.actif]=profil(n);sauver();toast('Progression effacée.');reglages();});
 $('#r-entree').onclick=e=>{const b=e.target.closest('button');if(!b)return;R().entree=b.dataset.v;sauver();reglages();};
 $('#r-vitesse').onclick=e=>{const b=e.target.closest('button');if(!b)return;R().vitesse=+b.dataset.v;sauver();reglages();};
+$('#r-pulse').onclick=e=>{const b=e.target.closest('button');if(!b)return;R().pulse=b.dataset.v;sauver();reglages();};
 $('#r-octave').onchange=e=>{R().octave=e.target.checked;sauver();};
 $('#r-son').onchange=e=>{R().son=e.target.checked;sauver();};
 $('#r-ouvert').onchange=e=>{R().ouvert=e.target.checked;sauver();};

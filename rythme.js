@@ -201,7 +201,7 @@ function repondre(ch,b){
 function lancerLecture(niv){
   const geo=geom('sol');
   G={niv,mode:'defi',lecture:true,lignes:4,li:0,total:0,bons:0,score:0,combo:0,maxCombo:0,faits:0,revoir:{},fin:false,extras:0,geo,
-     bpm:Math.round((niv.bpm||66)*R().vitesse),attente:200};
+     bpm:Math.round((niv.bpm||66)*R().vitesse),attente:100};
   montrer('jeu');garderEcran();
   const rc=$('#scene').getBoundingClientRect();
   G.W=Math.round(Math.max(560,Math.min(1100,geo.H*1.15*(rc.width/Math.max(1,rc.height)))));
@@ -212,7 +212,7 @@ function lancerLecture(niv){
   const dec=R().decalage||(R().decalage={});G.decal={micro:dec.micro??.06,ecran:dec.ecran??.02};
   (async()=>{
     if(R().entree==='micro'){const ok=await ecoute.demarrer();
-      if(ok){ecoute.onAttaque=null;ecoute.onNote=(m,t)=>frappe(t,'micro');G.attente=650;   // une attaque compte seulement si une vraie note de piano suit
+      if(ok){ecoute.onAttaque=null;ecoute.onNote=(m,t)=>frappe(t,'micro');G.attente=450;   // une attaque compte seulement si une vraie note de piano suit
         ecoute.onTrame=({rms})=>{$('#vu').style.width=Math.min(100,rms/(R().seuil*4)*100)+'%';};$('#entendu-txt').textContent='J\'écoute…';}
       else{$('#entendu-txt').textContent='Micro indisponible';toast('Le micro n\'est pas accessible. Tu peux jouer sur le clavier à l\'écran.',4200);}
     } else $('#entendu-txt').textContent='Clavier à l\'écran';
@@ -229,20 +229,21 @@ function ligneSuivante(){
   const r=rythmeSVG(mes,{c,x0:110,bw,chiffre:true,barreFin:true});
   const gR=svgEl('g');gR.innerHTML=r.h;svg.append(gR);G.fx=svgEl('g');svg.append(G.fx);
   const beat=60/G.bpm;
-  G.ligne={r,c,beat,svg,attendus:r.items.filter(i=>i.son).map(i=>({...i,fait:null})),silences:r.items.filter(i=>!i.son),bruts:[],tolBien:Math.max(170,beat*220),tolParfait:Math.max(85,beat*120)};
+  G.ligne={r,c,beat,svg,attendus:r.items.filter(i=>i.son).map(i=>({...i,fait:null})),silences:r.items.filter(i=>!i.son),bruts:[]};
+  fenetres(G.ligne.attendus,beat*1000);
   G.total+=G.ligne.attendus.length;
   // décompte d'une mesure, puis le métronome continue sur chaque temps jusqu'à la fin de la ligne
   const mot=$('#mot');mot.hidden=false;
   const debut=performance.now()+700;G.ligne.t0=debut+c*beat*1000;G.enCours=true;
   const a0=audio().currentTime+.7;
-  for(let k=0;k<c*(r.nb+1);k++) clicMetro(k%c===0,a0+k*beat);
+  for(let k=0;k<c*(r.nb+1);k++) pulsation(k,c,a0+k*beat,beat);
   for(let k=0;k<c;k++) setTimeout(()=>{if(!G||G.fin)return;mot.textContent=k+1;},700+k*beat*1000);
   setTimeout(()=>{if(G&&!G.fin)mot.hidden=true;},700+c*beat*1000);
-  const fin=G.ligne.t0+(r.nb*c)*beat*1000+Math.max(450,G.attente+50);
+  const fin=G.ligne.t0+(r.nb*c)*beat*1000+Math.max(...G.ligne.attendus.map(a=>a.tol))+G.attente+50;
   const tic=()=>{ if(!G||G.fin||!G.lecture) return;
     const now=performance.now();
     // notes manquées
-    for(const a of G.ligne.attendus) if(!a.fait&&now>G.ligne.t0+a.t*beat*1000+G.attente) marquer(a,'rate');
+    for(const a of G.ligne.attendus) if(!a.fait&&now>G.ligne.t0+a.t*beat*1000+a.tol+G.attente) marquer(a,'rate');
     if(now>=fin){finLigne();return;}
     requestAnimationFrame(tic);};
   requestAnimationFrame(tic);
@@ -264,12 +265,12 @@ function frappe(t,source){
   let best=null,bd=1e9;
   for(const a of L.attendus){ if(a.fait) continue; const d=adj-(L.t0+a.t*beat); if(Math.abs(d)<Math.abs(bd)){bd=d;best=a;} }
   const brut=best?t-(L.t0+best.t*beat):null;
-  if(best&&Math.abs(bd)<=L.tolBien){ L.bruts.push(brut/1000); L.volFort=Math.max(L.volFort||0,vol); best.ecart=bd; marquer(best,Math.abs(bd)<=L.tolParfait?'parfait':'bien'); clavJeu&&clavJeu.flash(clavJeuTouche(),'joue-ok',250); return; }
+  if(best&&Math.abs(bd)<=best.tol){ L.bruts.push(brut/1000); L.volFort=Math.max(L.volFort||0,vol); best.ecart=bd; marquer(best,Math.abs(bd)<=best.tolP?'parfait':'bien'); clavJeu&&clavJeu.flash(clavJeuTouche(),'joue-ok',250); return; }
   if(t<L.t0-beat*.5) return;           // pendant le décompte
   // Seule l'attaque compte. Une note déjà jugée sur un bruit (une touche qu'on relâche) garde la frappe la plus proche du temps.
-  const deja=L.attendus.find(a=>a.ecart!=null&&Math.abs(adj-(L.t0+a.t*beat))<=L.tolBien&&Math.abs(adj-(L.t0+a.t*beat))<Math.abs(a.ecart));
+  const deja=L.attendus.find(a=>a.ecart!=null&&Math.abs(adj-(L.t0+a.t*beat))<=a.tol&&Math.abs(adj-(L.t0+a.t*beat))<Math.abs(a.ecart));
   if(deja){ const d=adj-(L.t0+deja.t*beat);
-    if(Math.abs(d)<=L.tolParfait&&deja.fait==='bien'){ deja.fait='parfait';G.score+=40;const g=L.svg.querySelector(`.sym[data-i="${deja.g}"]`);if(g)g.style.setProperty('--ry','var(--ok)');majHudLecture(); }
+    if(Math.abs(d)<=deja.tolP&&deja.fait==='bien'){ deja.fait='parfait';G.score+=40;const g=L.svg.querySelector(`.sym[data-i="${deja.g}"]`);if(g)g.style.setProperty('--ry','var(--ok)');majHudLecture(); }
     deja.ecart=d; return; }
   // Le relâchement d'une note jouée (étouffoir, touche qui remonte) ne compte pas : on ignore ce qui tombe près de sa fin prévue.
   const bb=(adj-L.t0)/beat;
@@ -284,6 +285,15 @@ function frappe(t,source){
   majHudLecture();
 }
 const SEUIL_FRAPPE=.8;
+// On juge la lecture de la valeur, pas la précision du geste : une note compte si elle tombe sur le bon temps.
+// Sa fenêtre va jusqu'à 40 % de l'écart avec la note voisine (un temps au plus, un demi-temps entre deux croches).
+// Lire une blanche comme une noire décale l'attaque d'un temps entier : elle tombe hors de la fenêtre et reste une faute.
+const FEN_BIEN=.4;
+function fenetres(att,beatMs){
+  const s=att.slice().sort((a,b)=>a.t-b.t);
+  s.forEach((a,i)=>{const g=Math.min(1,i>0?a.t-s[i-1].t:1,i<s.length-1?s[i+1].t-a.t:1);
+    a.tol=FEN_BIEN*g*beatMs; a.tolP=Math.min(a.tol/2,Math.max(85,beatMs*.12));});
+}
 function clavJeuTouche(){return 67;}
 function finLigne(){
   const L=G.ligne;G.enCours=false;
