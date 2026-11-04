@@ -350,6 +350,32 @@ function mesPieces(){
   const fermer=()=>{v.hidden=true;v.innerHTML='';};
   f.querySelector('.fermer').onclick=fermer;v.onclick=ev=>{if(ev.target===v)fermer();};
 }
+/* ----- Une pièce n'utilise que ce que le parcours a déjà enseigné ----- */
+// Notes : celles du niveau « apres » et des niveaux de la même clé avant lui (n.ds et n.anciens).
+// Valeurs, liaison et chiffre de mesure : ceux des niveaux de valeurs jusqu'à « req » compris (n.nouv, n.metre).
+// Renvoie la liste des écarts ; vide si la pièce est conforme. Vérifié au chargement (console) et par les tests.
+function ecartsPiece(pc){
+  const ecarts=[],av=niveauDe(pc.apres),rq=niveauDe(pc.req);
+  if(!av||av.mode!=='portee') return [`niveau de notes « ${pc.apres} » introuvable`];
+  if(!rq||rq.mode!=='rythme') return [`niveau de valeurs « ${pc.req} » introuvable`];
+  if(av.cle!==pc.cle&&av.cle!=='grand') ecarts.push(`clé ${pc.cle}, mais « ${av.titre} » enseigne la clé ${av.cle}`);
+  const notesVues=new Set([...av.ds,...(av.anciens||[])]);
+  const iR=NIVEAUX.indexOf(rq),vus=NIVEAUX.slice(0,iR+1).filter(n=>n.mode==='rythme');
+  const valsVues=new Set(vus.flatMap(n=>n.nouv||[])),metres=new Set(vus.map(n=>n.metre).filter(Boolean));
+  const lu=lirePiece(pc);
+  const hors=[...new Set(lu.notes.filter(n=>n.son&&!notesVues.has(n.d)).map(n=>nomLong(n.d)))];
+  if(hors.length) ecarts.push(`notes pas encore vues : ${hors.join(', ')}`);
+  const vals=new Set(lu.notes.map(n=>n.val==='c'?'cc':n.val));if(lu.notes.some(n=>n.lieSuivant)) vals.add('li');
+  const valsHors=[...vals].filter(v=>!valsVues.has(v));
+  if(valsHors.length) ecarts.push(`valeurs pas encore vues : ${valsHors.map(nomNotion).join(', ')}`);
+  // Une croche seule n'est pas enseignée : les croches vont par deux sur un même temps.
+  const croches=lu.notes.filter(n=>n.val==='c');
+  if(croches.some(n=>!croches.some(k=>k!==n&&k.mi===n.mi&&Math.floor(k.tm)===Math.floor(n.tm)))) ecarts.push('croche seule');
+  if(!metres.has(pc.c)) ecarts.push(`mesure à ${pc.c} temps pas encore vue`);
+  return ecarts;
+}
+function verifierPieces(){ const r={};PIECES.forEach(pc=>{const e=ecartsPiece(pc);if(e.length)r[pc.id]=e;}); return r; }
+addEventListener('load',()=>{const r=verifierPieces();if(Object.keys(r).length) console.warn('Pièces hors parcours :',r);});
 // Pour essayer une pièce directement : ?piece=clair&mode=libre|tempo|ecoute|recital
 addEventListener('load',()=>{const q=new URLSearchParams(location.search),id=q.get('piece');
   if(id) setTimeout(()=>lancerPiece(id,q.get('mode')||'libre'),300);});
