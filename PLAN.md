@@ -44,6 +44,15 @@ Au tempo, chaque ligne est précédée d'une mesure de décompte (la batterie co
    « bon rythme ») ne sert qu’au Récital, qui seul affiche des chiffres.
 4. Pratique sans tempo : la pièce attend la bonne note (comme `recu`), noms affichés. Sert à trouver la pièce au clavier.
 
+### Étapes 2 et 3 : FAITES le 2026-11-04 (pieces.js, index.html)
+Fait : feuille de pièce (Écoute, À mon rythme, batterie lente à 75 % ou normale, Récital), bouton « Voir les noms » en
+À mon rythme et au tempo (choix gardé par profil, `P().nomsPieces`), mesures répétées sur fond de couleur en À mon rythme,
+Récital jugé (médaille si 90 % des notes justes, notes « au bon moment sur une autre touche » comptées à part),
+fin « Rejouer · Une autre pièce · Retour au chemin », XP fixe (10, ou 5 pour l'écoute), nœuds en forme de partition
+après s1, s2 et s3, « Il te faut la ronde » qui ouvre le niveau de valeurs, écran « Mes pièces », annonce sur la feuille
+du niveau de notes et sur ses résultats. État par profil : `P().pieces[id] = {fois, medaille}`.
+Testé au Playwright (clavier à l'écran et robot au tempo). Pas encore au banc micro ni sur le vrai piano.
+
 ### Étape 2. Une pièce se joue, elle ne se passe pas (décision de David, 2026-11-03)
 « Tous les moments n'ont pas besoin d'être un test, certains moments peuvent être juste pour jouer, surtout les pièces. »
 - Par défaut, une pièce est un moment de jeu : pas de score, pas d'étoiles, pas de note rouge qui secoue, pas de XP perdu.

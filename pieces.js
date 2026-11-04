@@ -10,26 +10,33 @@
    Trois façons de jouer (lancerPiece(id, mode)) :
    - 'ecoute' : l'appli joue la mélodie, la note jouée s'allume ;
    - 'libre'  : à mon rythme, la pièce attend la bonne note ;
-   - 'tempo'  : avec la batterie, la pièce avance au tempo. Une bonne note jouée près de son temps s'allume. */
+   - 'tempo'  : avec la batterie, la pièce avance au tempo (o.lent : 75 % du tempo). Une bonne note jouée près de son temps s'allume ;
+   - 'recital': au tempo, sans les noms. Le seul mode qui compte : une médaille (étoile dorée) si 90 % des notes sont justes.
+     C'est une médaille, jamais une porte : rien ne s'ouvre ni ne se ferme avec.
+
+   Place dans le chemin : apres = niveau de notes qui précède la pièce, req = niveau de valeurs requis.
+   La pièce s'ouvre quand les deux ont 2 étoiles. Elle ne bloque jamais le niveau suivant. */
 
 const PIECES=[
- {id:'clair',titre:'Au clair de la lune',c:4,bpm:76,cle:'sol',
+ {id:'clair',titre:'Au clair de la lune',c:4,bpm:76,cle:'sol',apres:'s1',req:'v4',
   // Sans la 3e phrase (« Ma chandelle est morte »), qui descend sous le Do central. Forme A A B A : on joue les trois A.
   m:'C4:n C4:n C4:n D4:n | E4:b D4:b | C4:n E4:n D4:n D4:n | C4:r | '+
     'C4:n C4:n C4:n D4:n | E4:b D4:b | C4:n E4:n D4:n D4:n | C4:r | '+
     'C4:n C4:n C4:n D4:n | E4:b D4:b | C4:n E4:n D4:n D4:n | C4:r'},
- {id:'jacques',titre:'Frère Jacques',c:4,bpm:80,cle:'sol',
+ {id:'jacques',titre:'Frère Jacques',c:4,bpm:80,cle:'sol',apres:'s2',req:'v3',
   m:'C4:n D4:n E4:n C4:n | C4:n D4:n E4:n C4:n | E4:n F4:n G4:b | E4:n F4:n G4:b'},
- {id:'joie',titre:'Ode à la joie',sous:'Beethoven',c:4,bpm:80,cle:'sol',
+ {id:'joie',titre:'Ode à la joie',sous:'Beethoven',c:4,bpm:80,cle:'sol',apres:'s2',req:'v3',
   // Rythme pointé de la 4e mesure simplifié en noire, noire, blanche.
   m:'E4:n E4:n F4:n G4:n | G4:n F4:n E4:n D4:n | C4:n C4:n D4:n E4:n | E4:n D4:n D4:b | '+
     'E4:n E4:n F4:n G4:n | G4:n F4:n E4:n D4:n | C4:n C4:n D4:n E4:n | D4:n C4:n C4:b'},
- {id:'maman',titre:'Ah ! vous dirai-je maman',sous:'Mozart',c:4,bpm:80,cle:'sol',
+ {id:'maman',titre:'Ah ! vous dirai-je maman',sous:'Mozart',c:4,bpm:80,cle:'sol',apres:'s3',req:'v3',
   m:'C4:n C4:n G4:n G4:n | A4:n A4:n G4:b | F4:n F4:n E4:n E4:n | D4:n D4:n C4:b | '+
     'G4:n G4:n F4:n F4:n | E4:n E4:n D4:b | G4:n G4:n F4:n F4:n | E4:n E4:n D4:b | '+
     'C4:n C4:n G4:n G4:n | A4:n A4:n G4:b | F4:n F4:n E4:n E4:n | D4:n D4:n C4:b'},
 ];
 const DUREE_P={n:1,b:2,bp:3,r:4,c:.5,s:1,dp:2,p:null};
+const MOTIFS=['#F2B84B','#5FB0E5','#8FCB6B','#E58FB6','#B49BE8','#F08A5D'];
+const SEUIL_MEDAILLE=.9;
 
 /* ----- Lecture du format ----- */
 function lirePiece(pc){
@@ -47,19 +54,27 @@ function lirePiece(pc){
   // Liaisons : la note liée ne se rejoue pas, la première dure les deux.
   const sons=notes.filter(n=>n.son);sons.forEach(n=>n.sonDur=n.dur);
   for(let k=sons.length-1;k>=0;k--){const a=sons[k],b=sons[k+1];if(a.lieSuivant&&b){b.lie=true;a.sonDur=a.dur+b.sonDur;}}
-  return {mesures,notes,nb:mesures.length};
+  // Motifs : les mesures identiques reçoivent le même numéro (-1 si la mesure n'apparaît qu'une fois).
+  const cles=mesures.map(m=>m.join(' ')),groupes=[];
+  const motif=cles.map(k=>{ if(cles.filter(x=>x===k).length<2) return -1; let g=groupes.indexOf(k); if(g<0){groupes.push(k);g=groupes.length-1;} return g; });
+  return {mesures,notes,nb:mesures.length,motif};
 }
 
 /* ----- Dessin d'une ligne de mesures sur la portée ----- */
 // Renvoie le SVG de la ligne et, pour chaque note, sa position x et l'indice de son groupe graphique.
 function ligneSVG(pc,lu,m0,m1,o){
   const p=o.geo.portees[0],c=pc.c,bw=o.bw,pad=28,coulT='var(--ry,var(--staff))';
-  let x=o.x0,h='';const debuts=[];
+  let x=o.x0,h='';const debuts=[],fins=[];
   if(m0===0){ h+=chiffreSVG(x+22,c); x+=50; }
   const dansLigne=lu.notes.filter(n=>n.mi>=m0&&n.mi<m1);
-  for(let mi=m0;mi<m1;mi++){debuts[mi]=x;x=x+pad+c*bw+pad*.5;
+  for(let mi=m0;mi<m1;mi++){debuts[mi]=x;x=x+pad+c*bw+pad*.5;fins[mi]=x;
     h+=`<line x1="${x}" x2="${x}" y1="${p.bas-80}" y2="${p.bas}" stroke="var(--staff)" stroke-width="${mi===lu.nb-1?4:2}"/>`;}
   const r=n=>n.d-REF[p.cle];
+  // À mon rythme : les mesures qui se répètent ont la même couleur de fond, pour repérer les motifs.
+  if(o.motifs){ let f='';
+    for(let mi=m0;mi<m1;mi++){ const g=lu.motif[mi]; if(g<0) continue;
+      f+=`<rect class="motif" x="${debuts[mi]+6}" y="${p.bas-112}" width="${fins[mi]-debuts[mi]-12}" height="150" rx="12" fill="${MOTIFS[g%MOTIFS.length]}" opacity=".22"/>`; }
+    h=f+h; }
   dansLigne.forEach(n=>{n.x=debuts[n.mi]+pad+n.tm*bw+6;});
   // Croches : réunies deux par deux sur un même temps.
   const croches=dansLigne.filter(n=>n.val==='c');
@@ -95,7 +110,9 @@ function ligneSVG(pc,lu,m0,m1,o){
 }
 
 /* ----- Jouer une pièce ----- */
-function lancerPiece(id,mode='libre'){
+const etatsPieces=()=>P().pieces||(P().pieces={});
+const etatPieceDe=id=>etatsPieces()[id]||(etatsPieces()[id]={fois:0,medaille:false});
+function lancerPiece(id,mode='libre',o={}){
   const pc=PIECES.find(x=>x.id===id);if(!pc){toast('Pièce introuvable.');return;}
   const lu=lirePiece(pc),geo=geom(pc.cle);
   montrer('jeu');garderEcran();$('#jeu').classList.add('mode-piece');
@@ -104,14 +121,21 @@ function lancerPiece(id,mode='libre'){
   // Autant de mesures par ligne que la largeur le permet, sans que les notes deviennent trop serrées (2 à 4).
   const parLigne=Math.max(2,Math.min(4,Math.floor((W-160)/(pc.c*58+42))));
   const lignes=[];for(let m=0;m<lu.nb;m+=parLigne)lignes.push([m,Math.min(lu.nb,m+parLigne)]);
-  const S=G={piece:pc,mode,lu,geo,W,lignes,li:0,fin:false,noms:mode!=='tempo',bpm:Math.round(pc.bpm*(mode==='tempo'?R().vitesse:1)),
-    sons:lu.notes.filter(n=>n.son&&!n.lie),justes:0};
+  const auTempo=mode==='tempo'||mode==='recital';
+  const noms=mode==='recital'?false:mode==='ecoute'?true:!!P().nomsPieces;
+  const S=G={piece:pc,mode,o,lu,geo,W,lignes,li:0,fin:false,noms,
+    bpm:Math.round(pc.bpm*(auTempo?R().vitesse:1)*(o.lent?.75:1)),sons:lu.notes.filter(n=>n.son&&!n.lie),justes:0};
+  lu.notes.forEach(n=>{n.juste=false;n.bonMoment=false;});
   $('#prog').style.width='0%';$('#score').textContent='';$('#combo').textContent='';
-  $('#consigne').textContent=mode==='ecoute'?'Écoute la pièce et suis les notes.':mode==='libre'?'Joue chaque note. La pièce t\'attend.':'Joue avec la batterie. Si tu te trompes, continue !';
+  $('#consigne').textContent={ecoute:'Écoute la pièce et suis les notes.',libre:'Joue chaque note. La pièce t\'attend.',
+    tempo:'Joue avec la batterie. Si tu te trompes, continue !',recital:'Récital : toute la pièce, sans les noms. Si tu te trompes, continue !'}[mode];
   $('#encourage').classList.remove('vu');$('#encourage-masc').innerHTML=mascotte(46);
+  const bn=$('#b-noms');bn.hidden=mode==='ecoute'||mode==='recital';majBoutonNoms();
+  bn.onclick=()=>{ if(G!==S||S.fin) return; S.noms=!S.noms;P().nomsPieces=S.noms;sauver();majBoutonNoms();faireClavier();if(S.ligne)repeindre(); };
   const ds=[...new Set(S.sons.map(n=>n.d))];
   const [lo,hi]=bornesClavier(ds,'portee');
-  clavJeu=clavier($('#clavier-jeu'),lo,hi,{noms:S.noms?'tous':'do',onNote:m=>{ecoute.ignorer(900);pieceNote(m,performance.now(),'ecran');}});
+  const faireClavier=()=>{clavJeu=clavier($('#clavier-jeu'),lo,hi,{noms:S.noms?'tous':'do',onNote:m=>{ecoute.ignorer(900);pieceNote(m,performance.now(),'ecran');}});};
+  faireClavier();
   const dec=R().decalage||{};S.decal={micro:dec.micro??.06,ecran:dec.ecran??.02};
   (async()=>{
     if(mode!=='ecoute'&&R().entree==='micro'){const ok=await ecoute.demarrer();
@@ -123,15 +147,26 @@ function lancerPiece(id,mode='libre'){
     pieceLigne();
   })();
 }
+function majBoutonNoms(){ const b=$('#b-noms');if(!G||!G.piece)return; b.textContent=G.noms?'Cacher les noms':'Voir les noms'; b.setAttribute('aria-pressed',String(G.noms)); }
+// Dessine la ligne courante. Les notes gardent leur état (allumées ou non) : on peut redessiner en pleine pièce.
+function peindreLigne(){
+  const S=G,[m0,m1]=S.lignes[S.li],pc=S.piece,svg=$('#planche');
+  svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${S.W} ${S.geo.H}`);dessinerPortee(svg,S.geo,0,S.W);
+  const nbM=m1-m0,bw=Math.min(90,(S.W-(m0===0?160:110)-nbM*42)/(nbM*pc.c));
+  const L=ligneSVG(pc,S.lu,m0,m1,{geo:S.geo,x0:110,bw,noms:S.noms,motifs:S.mode==='libre'});
+  const g=svgEl('g');g.innerHTML=L.h;svg.append(g);S.fx=svgEl('g');svg.append(S.fx);
+  return {svg,notes:L.notes};
+}
+function repeindre(){
+  const S=G;if(S.li>=S.lignes.length) return;
+  peindreLigne();S.ligne.a.forEach(n=>{if(n.juste)couleurNote(n,'var(--ok)');});
+  if(S.mode==='libre') marquerCourante();
+}
 function pieceLigne(){
   const S=G;if(!S||!S.piece||S.fin) return;
   if(S.li>=S.lignes.length){finPiece();return;}
-  const [m0,m1]=S.lignes[S.li],pc=S.piece,svg=$('#planche');
-  svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${S.W} ${S.geo.H}`);dessinerPortee(svg,S.geo,0,S.W);
-  const nbM=m1-m0,bw=Math.min(90,(S.W-(m0===0?160:110)-nbM*42)/(nbM*pc.c));
-  const L=ligneSVG(pc,S.lu,m0,m1,{geo:S.geo,x0:110,bw,noms:S.noms});
-  const g=svgEl('g');g.innerHTML=L.h;svg.append(g);S.fx=svgEl('g');svg.append(S.fx);
-  S.ligne={svg,notes:L.notes,a:L.notes.filter(n=>n.son&&!n.lie),k:0,t0:null};
+  const {svg,notes}=peindreLigne();
+  S.ligne={svg,notes,a:notes.filter(n=>n.son&&!n.lie),k:0,t0:null};
   if(S.mode==='libre'){ marquerCourante(); }
   else ligneAuTempo();
 }
@@ -161,12 +196,14 @@ function pieceNote(m,t,source){
     else marquerCourante();
     return;
   }
-  if(S.mode==='tempo'&&L.t0!=null){
+  if((S.mode==='tempo'||S.mode==='recital')&&L.t0!=null){
     const beat=60000/S.bpm,adj=t-S.decal[source]*1000;
     // La note libre la plus proche de ce moment, de la bonne hauteur, dans sa fenêtre.
-    let best=null,bd=Infinity;
-    for(const n of L.a){ if(n.juste||!noteJuste(m,n)) continue; const d=Math.abs(adj-(L.t0+(n.t-L.tLigne)*beat)); if(d<=n.tol&&d<bd){bd=d;best=n;} }
+    let best=null,bd=Infinity,proche=null,pd=Infinity;
+    for(const n of L.a){ if(n.juste) continue; const d=Math.abs(adj-(L.t0+(n.t-L.tLigne)*beat)); if(d>n.tol) continue;
+      if(noteJuste(m,n)&&d<bd){bd=d;best=n;} if(d<pd){pd=d;proche=n;} }
     if(best){allumer(best);clavJeu&&clavJeu.flash(m,'joue-ok');}
+    else if(proche) proche.bonMoment=true;   // au bon moment, mais une autre touche : compté seulement au Récital, sans rien montrer
   }
 }
 // Au tempo (et pour l'écoute) : une mesure de décompte, puis la ligne. La batterie ne s'arrête pas entre deux lignes :
@@ -179,7 +216,7 @@ function ligneAuTempo(){
   // Horloge audio : la ligne suivante commence exactement à la fin de celle-ci, la batterie ne s'interrompt pas.
   const c0=S.aSuite??ac.currentTime+.5,decal=performance.now()-ac.currentTime*1000,perf=a=>a*1000+decal;
   L.t0=perf(c0+c*beat);S.aSuite=c0+(c+nbT)*beat;
-  if(S.mode==='tempo') for(let k=0;k<c+nbT;k++) pulsation(k,c,c0+k*beat,beat);
+  if(S.mode!=='ecoute') for(let k=0;k<c+nbT;k++) pulsation(k,c,c0+k*beat,beat);
   else for(let k=0;k<c;k++) clicMetro(k===0,c0+k*beat);
   const mot=$('#mot');mot.hidden=false;mot.textContent='';
   for(let k=0;k<c;k++) setTimeout(()=>{if(G===S&&!S.fin){mot.hidden=false;mot.textContent=k+1;}},perf(c0+k*beat)-performance.now());
@@ -194,15 +231,96 @@ function ligneAuTempo(){
     pieceLigne();},perf(S.aSuite)-performance.now());
 }
 function finPiece(){
-  const S=G;S.fin=true;arreterMetro();ecoute.onNote=null;ecoute.onTrame=null;ecoute.arreter();
-  const dit=S.mode==='ecoute'?'Tu l\'as entendue. À toi de la jouer !':S.justes===S.sons.length?'Bravo ! Tu as joué toute la pièce.':'Bravo ! Tu as joué la pièce jusqu\'au bout.';
+  const S=G;S.fin=true;arreterMetro();ecoute.onNote=null;ecoute.onTrame=null;ecoute.arreter();$('#b-noms').hidden=true;
+  const pc=S.piece,e=etatPieceDe(pc.id),tot=S.sons.length,rythme=S.sons.filter(n=>!n.juste&&n.bonMoment).length;
+  // XP fixe, quel que soit le résultat : jouer une pièce compte pour l'objectif du jour et la série.
+  ajouterXP(S.mode==='ecoute'?5:10);
+  if(S.mode!=='ecoute') e.fois++;
+  const medaille=S.mode==='recital'&&S.justes/tot>=SEUIL_MEDAILLE,nouvelle=medaille&&!e.medaille;
+  if(medaille) e.medaille=true;
+  sauver();
+  const dit=S.mode==='ecoute'?'Tu l\'as entendue. À toi de la jouer !'
+    :S.mode==='recital'?(nouvelle?'Bravo ! Tu as gagné l\'étoile dorée de cette pièce.':medaille?'Bravo ! Encore un beau récital.':'Beau récital ! Rejoue-la quand tu veux.')
+    :S.justes===tot?'Bravo ! Tu as joué toute la pièce.':'Bravo ! Tu as joué la pièce jusqu\'au bout.';
+  // Seul le Récital donne des chiffres.
+  const chiffres=S.mode==='recital'?`<div class="dit">${S.justes} notes justes sur ${tot}${rythme?`, et ${rythme} au bon moment sur une autre touche`:''}.</div>`
+    +(medaille?`<svg viewBox="0 0 100 100" width="64" height="64" class="medaille-fin"><g fill="var(--gold)">${ETOILE}</g></svg>`:`<div class="dit">L'étoile dorée se gagne avec ${Math.ceil(tot*SEUIL_MEDAILLE)} notes justes.</div>`):'';
   sonFin();$('#encourage').classList.remove('vu');
   const pan=document.createElement('div');pan.className='fin-piece';
-  pan.innerHTML=`<div>${mascotte(84,'wow')}</div><div class="titre">${S.piece.titre}</div><div class="dit">${dit}</div><div class="rangee"><button class="btn ok" id="fp-encore">Rejouer</button><button class="btn" id="fp-retour">Retour</button></div>`;
+  pan.innerHTML=`<div>${mascotte(84,'wow')}</div><div class="titre">${pc.titre}</div><div class="dit">${dit}</div>${chiffres}<div class="rangee"><button class="btn ok" id="fp-encore">Rejouer</button><button class="btn" id="fp-autre">Une autre pièce</button><button class="btn" id="fp-retour">Retour au chemin</button></div>`;
   $('#scene').append(pan);
-  $('#fp-encore').onclick=()=>{pan.remove();lancerPiece(S.piece.id,S.mode);};
+  $('#fp-encore').onclick=()=>{pan.remove();lancerPiece(pc.id,S.mode,S.o);};
+  $('#fp-autre').onclick=()=>{pan.remove();quitter();mesPieces();};
   $('#fp-retour').onclick=()=>{pan.remove();quitter();};
 }
-// Pour essayer une pièce avant qu'elle soit dans le chemin : ?piece=clair&mode=libre|tempo|ecoute
+
+/* ----- Place dans le chemin ----- */
+const niveauDe=id=>NIVEAUX.find(n=>n.id===id);
+// 'ouverte', 'notes' (le niveau de notes n'a pas 2 étoiles) ou 'rythme' (il manque la valeur requise).
+function etatPiece(pc){
+  if(R().ouvert) return 'ouverte';
+  const et=P().etoiles;
+  if((et[pc.apres]||0)<2) return 'notes';
+  if((et[pc.req]||0)<2) return 'rythme';
+  return 'ouverte';
+}
+const ilTeFaut=pc=>'Il te faut '+niveauDe(pc.req).titre.replace(/^L[ae] /,m=>m.toLowerCase()).replace(/^L'/,'l\'');
+function toucherPiece(pc){
+  const e=etatPiece(pc);
+  if(e==='ouverte'){feuillePiece(pc);return;}
+  if(e==='notes'){toast(`Gagne 2 étoiles à « ${niveauDe(pc.apres).titre} » pour ouvrir cette pièce.`,3200);return;}
+  // Il manque une valeur de note : on ouvre le niveau qui l'enseigne (ou le premier niveau de valeurs à faire avant lui).
+  const i=NIVEAUX.indexOf(niveauDe(pc.req));
+  let cible=i;
+  if(!ouvert(i)) cible=NIVEAUX.findIndex((n,k)=>k<=i&&n.mode==='rythme'&&ouvert(k)&&(P().etoiles[n.id]||0)<2);
+  toast(ilTeFaut(pc)+(cible===i?'.':'. On commence par les valeurs de notes.'),3200);
+  $('#voile').hidden=true;$('#voile').innerHTML='';
+  if(cible>=0) ouvrirNiveau(cible);
+}
+const ICONE_PIECE=`<svg width="44" height="34" viewBox="0 0 44 34" aria-hidden="true"><g stroke="currentColor" stroke-width="2" opacity=".5"><line x1="2" x2="42" y1="8" y2="8"/><line x1="2" x2="42" y1="15" y2="15"/><line x1="2" x2="42" y1="22" y2="22"/><line x1="2" x2="42" y1="29" y2="29"/></g><g fill="currentColor"><ellipse cx="14" cy="26" rx="5.5" ry="4" transform="rotate(-20 14 26)"/><ellipse cx="30" cy="20" rx="5.5" ry="4" transform="rotate(-20 30 20)"/><rect x="18" y="7" width="2.4" height="19"/><rect x="34" y="2" width="2.4" height="18"/><path d="M18 7 L36.4 2 L36.4 7 L18 12 Z"/></g></svg>`;
+function noeudPiece(pc,dx){
+  const e=etatPiece(pc),med=etatPieceDe(pc.id).medaille;
+  const b=document.createElement('button');b.className='noeud piece'+(e==='notes'?' ferme':e==='rythme'?' attend':'');
+  b.style.transform=`translateX(${dx}px)`;
+  b.setAttribute('aria-label',`Pièce : ${pc.titre}${e==='ouverte'?'':e==='notes'?' (verrouillée)':' ('+ilTeFaut(pc).toLowerCase()+')'}`);
+  b.innerHTML=`<span class="partition">${ICONE_PIECE}${med?'<span class="medaille" aria-hidden="true">★</span>':''}</span>
+    <span class="nom">${pc.titre}</span>${e==='rythme'?`<span class="manque">${ilTeFaut(pc)}</span>`:''}`;
+  b.onclick=()=>toucherPiece(pc);
+  return b;
+}
+function feuillePiece(pc){
+  const v=$('#voile'),e=etatPieceDe(pc.id);v.innerHTML='';
+  const f=document.createElement('div');f.className='feuille';f.setAttribute('role','dialog');f.setAttribute('aria-label',pc.titre);
+  f.innerHTML=`<div class="rangee" style="justify-content:space-between"><div class="eyebrow">Pièce${pc.sous?' · '+pc.sous:''}</div><button class="fermer" aria-label="Fermer">×</button></div>
+   <h2>${pc.titre}</h2>
+   <div class="dialogue">${mascotte(52)}<div class="dit">Ici, pas de points. Joue-la comme tu veux, autant de fois que tu veux.</div></div>
+   <div class="choix" style="margin-top:12px">
+     <button class="btn" data-m="ecoute">Écoute<small>L'appli joue, tu suis</small></button>
+     <button class="btn prim" data-m="libre">À mon rythme<small>La pièce t'attend</small></button>
+     <button class="btn" data-m="tempo" data-lent="1">Avec la batterie<small>Lentement</small></button>
+     <button class="btn" data-m="tempo">Avec la batterie<small>Au tempo normal</small></button>
+   </div>
+   <div class="rangee recital"><button class="btn petit" data-m="recital">Récital</button>
+     <span>${e.medaille?'<span style="color:var(--gold)">★</span> Tu as l\'étoile dorée de cette pièce.':'Toute la pièce, sans les noms. Une étoile dorée à gagner, si tu veux.'}</span></div>`;
+  v.append(f);v.hidden=false;
+  const fermer=()=>{v.hidden=true;v.innerHTML='';};
+  f.querySelector('.fermer').onclick=fermer;v.onclick=ev=>{if(ev.target===v)fermer();};
+  f.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{fermer();lancerPiece(pc.id,b.dataset.m,{lent:!!b.dataset.lent});});
+}
+function mesPieces(){
+  const v=$('#voile');v.innerHTML='';
+  const f=document.createElement('div');f.className='feuille';f.setAttribute('role','dialog');f.setAttribute('aria-label','Mes pièces');
+  f.innerHTML=`<div class="rangee" style="justify-content:space-between"><h2 style="margin:0">Mes pièces</h2><button class="fermer" aria-label="Fermer">×</button></div>
+   <p style="color:var(--muted);margin:6px 0 12px">Les pièces ouvertes se rejouent quand tu veux, juste pour le plaisir.</p><div class="liste-pieces"></div>`;
+  const liste=f.querySelector('.liste-pieces');
+  PIECES.forEach(pc=>{const e=etatPiece(pc),st=etatPieceDe(pc.id);
+    const b=document.createElement('button');b.className='ligne-piece'+(e==='ouverte'?'':' ferme');
+    b.innerHTML=`<span class="titre">${pc.titre}${pc.sous?` <small>${pc.sous}</small>`:''}</span><span class="etat">${e==='ouverte'?(st.medaille?'<span style="color:var(--gold)">★</span>':st.fois?'Déjà jouée':'Nouvelle'):e==='notes'?'Après « '+niveauDe(pc.apres).titre+' »':ilTeFaut(pc)}</span>`;
+    b.onclick=()=>toucherPiece(pc);liste.append(b);});
+  v.append(f);v.hidden=false;
+  const fermer=()=>{v.hidden=true;v.innerHTML='';};
+  f.querySelector('.fermer').onclick=fermer;v.onclick=ev=>{if(ev.target===v)fermer();};
+}
+// Pour essayer une pièce directement : ?piece=clair&mode=libre|tempo|ecoute|recital
 addEventListener('load',()=>{const q=new URLSearchParams(location.search),id=q.get('piece');
   if(id) setTimeout(()=>lancerPiece(id,q.get('mode')||'libre'),300);});
