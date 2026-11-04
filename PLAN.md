@@ -28,7 +28,15 @@ par des pièces accrochées aux niveaux existants. Les listes de répertoire des
 - Point de vigilance connu : notes répétées rapides mal détectées (environ 37 attaques sur 60 en croches répétées).
   Au clair de la lune commence par Do Do Do en noires : à passer au banc avant tout.
 
-### Étape 1. Moteur de pièce (rythme.js, nouveau fichier pieces.js)
+### Étape 1. Moteur de pièce : FAIT le 2026-11-03 (pieces.js)
+Fait : format, dessin sur la portée (hauteur, durée, lignes supplémentaires, sens des tiges, croches, liaisons),
+trois façons de jouer (`lancerPiece(id,'ecoute'|'libre'|'tempo')`), 4 pièces (clair, jacques, joie, maman),
+écran de fin sans chiffres. Pour essayer avant l'étape 2 : `?piece=clair&mode=libre` dans l'adresse.
+Banc (`banc/`) : toutes les notes détectées, notes répétées comprises, de 76 à 110 battements par minute.
+Pas encore fait : le jugement du Récital (étape 2), les noms affichables sur demande en mode tempo, la clé de fa.
+Écart avec le texte d'origine ci-dessous : `frappe()` de rythme.js n'est pas touché, les pièces ont leur propre écoute (`pieceNote`).
+Au tempo, chaque ligne est précédée d'une mesure de décompte (la batterie continue) pour laisser le temps de la lire.
+
 1. Format d'une pièce, lisible à la main : `'C4:n C4:n C4:n D4:n | E4:b D4:b | ...'`. Un silence n'a pas de hauteur (`s`, `dp`, `p`).
 2. `rythmeSVG` accepte une hauteur par jeton : tête placée avec `yNote`, lignes supplémentaires (Do central),
    tige vers le bas au-dessus de la 3e ligne. Croches : la barre suit les deux têtes.

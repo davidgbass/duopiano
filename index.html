@@ -170,6 +170,11 @@ h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance
 .encourage{position:absolute;right:12px;bottom:10px;display:flex;align-items:flex-end;gap:8px;pointer-events:none;max-width:60%}
 .encourage .dit{background:var(--accent-soft);color:var(--ink);font-weight:700;border-radius:14px 14px 4px 14px;padding:8px 12px;font-size:15px}
 .encourage{opacity:0;transition:opacity .25s}
+.mode-piece .score,.mode-piece .combo{visibility:hidden}
+.fin-piece{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:5;background:color-mix(in srgb,var(--board) 92%,transparent)}
+.fin-piece .titre{font-family:var(--f-display);font-weight:700;font-size:28px;color:var(--ink)}
+.fin-piece .rangee{display:flex;gap:12px}
+.fin-piece .dit{font-size:18px;color:var(--muted)}
 .encourage.vu{opacity:1}
 
 /* Notes dans le SVG */
@@ -404,6 +409,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 
 <script src="tutos.js"></script>
 <script src="rythme.js"></script>
+<script src="pieces.js"></script>
 <script>
 'use strict';
 /* ---------- Notes ---------- */
@@ -1088,7 +1094,7 @@ function boucle(ts){
   requestAnimationFrame(boucle);
 }
 function verifierFin(){ if(G.faits>=G.total&&!G.fin){ G.fin=true; setTimeout(resultats,650); } }
-function quitter(){ if(G){G.fin=true;} G=null; arreterMetro(); ecoute.onNote=null; ecoute.onTrame=null; ecoute.onAttaque=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){} accueil(); }
+function quitter(){ if(G){G.fin=true;} G=null; $('#jeu').classList.remove('mode-piece'); document.querySelector('.fin-piece')?.remove(); arreterMetro(); ecoute.onNote=null; ecoute.onTrame=null; ecoute.onAttaque=null; ecoute.arreter(); try{garderEcran.v&&garderEcran.v.release();}catch(e){} accueil(); }
 $('#b-quitter').onclick=quitter;$('#q-quitter').onclick=quitter;
 
 /* ---------- Résultats ---------- */
