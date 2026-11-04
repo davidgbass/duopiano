@@ -115,36 +115,62 @@ g3:[
  {dit:"La vitesse s'ajuste à toi. Si tu te trompes, les notes ralentissent.",a:[]},
  {dit:"Lis la note, trouve le repère, joue.",a:[{t:'cle'}]},
  {dit:"À toi ! Joue le Do central.",a:[{t:'toi',n:'C4'}]}],
-r1:[
- {dit:"La noire a une tête pleine et une tige. Elle dure un temps.",a:[{t:'rythme',m:'n'}]},
- {dit:"La blanche a une tête vide. Elle dure deux temps : on la tient plus longtemps.",a:[{t:'rythme',m:'b'}]},
- {dit:"Le chiffre quatre, en haut, veut dire quatre temps par mesure. Écoute : noire, noire, blanche.",a:[{t:'rythme',m:'n n b',c:4},{t:'compte'}]},
- {dit:"La blanche prend les temps trois et quatre.",a:[{t:'compte'}]},
- {dit:"À toi ! Combien de temps dure la blanche ?",a:[{t:'toiQ',q:"Combien de temps dure la blanche ?",choix:['1 temps','2 temps','4 temps'],rep:'2 temps',expl:"Tête vide avec une tige : deux temps."}]}],
-r2:[
- {dit:"La ronde est une tête vide, sans tige. Elle dure quatre temps.",a:[{t:'rythme',m:'r'}]},
- {dit:"Elle remplit toute une mesure à quatre temps.",a:[{t:'rythme',m:'r',c:4},{t:'compte'}]},
- {dit:"Une ronde vaut deux blanches, ou quatre noires.",a:[{t:'rythme',m:'r | b b | n n n n',c:4},{t:'compte'}]},
- {dit:"À toi ! Combien de temps dure la ronde ?",a:[{t:'toiQ',q:"Combien de temps dure la ronde ?",choix:['2 temps','3 temps','4 temps'],rep:'4 temps',expl:"Sans tige, c'est la plus longue : quatre temps."}]}],
-r3:[
- {dit:"Un point après une note l'allonge de la moitié.",a:[{t:'rythme',m:'bp'}]},
- {dit:"La blanche dure deux temps. Avec le point, elle dure trois temps.",a:[{t:'rythme',m:'b bp'}]},
- {dit:"Ici, le chiffre trois en haut veut dire trois temps par mesure.",a:[{t:'rythme',m:'bp | n b',c:3},{t:'compte'}]},
- {dit:"À toi ! Combien de temps dure la blanche pointée ?",a:[{t:'toiQ',q:"Combien de temps dure la blanche pointée ?",choix:['2 temps','3 temps','4 temps'],rep:'3 temps',expl:"Deux temps, plus la moitié de deux : trois temps."}]}],
-r4:[
- {dit:"Un silence, c'est un moment où on ne joue pas. Mais on compte quand même.",a:[]},
- {dit:"Le soupir dure un temps, comme la noire.",a:[{t:'rythme',m:'n s n s',c:4},{t:'compte'}]},
- {dit:"La demi-pause dure deux temps. Elle est posée sur la ligne du milieu.",a:[{t:'rythme',m:'b dp',c:4},{t:'compte'}]},
- {dit:"La pause dure toute la mesure. Elle pend sous la quatrième ligne.",a:[{t:'rythme',m:'p | n n b',c:4},{t:'compte'}]},
- {dit:"À toi ! Le soupir, c'est un son ou un silence ?",a:[{t:'toiQ',q:"Le soupir, c'est un son ou un silence ?",choix:['Un son','Un silence'],rep:'Un silence',expl:"Le soupir est un silence d'un temps."}]}],
-r5:[
- {dit:"Les croches vont souvent par deux, attachées par une barre.",a:[{t:'rythme',m:'cc'}]},
- {dit:"Deux croches durent un temps. Chaque croche dure un demi-temps.",a:[{t:'rythme',m:'n cc'}]},
- {dit:"On compte : un et, deux et. Écoute.",a:[{t:'rythme',m:'cc cc b',c:4},{t:'compte'}]},
- {dit:"À toi ! Combien de temps durent deux croches ?",a:[{t:'toiQ',q:"Combien de temps durent deux croches ?",choix:['1 temps','2 temps','4 temps'],rep:'1 temps',expl:"Deux croches tiennent dans un seul temps."}]}],
-r6:[
- {dit:"Le chiffre du haut dit combien de temps il y a dans chaque mesure.",a:[{t:'rythme',m:'n n | b',c:2},{t:'compte'}]},
- {dit:"Ici, trois temps par mesure.",a:[{t:'rythme',m:'n n n | bp',c:3},{t:'compte'}]},
- {dit:"Pour vérifier une mesure, additionne les temps. Blanche, noire, noire : deux, plus un, plus un, ça fait quatre.",a:[{t:'rythme',m:'b n n',c:4}]},
- {dit:"À toi ! Une blanche et une noire, ça fait combien de temps ?",a:[{t:'toiQ',q:"Une blanche et une noire, ça fait combien de temps ?",choix:['2 temps','3 temps','4 temps'],rep:'3 temps',expl:"Deux, plus un : trois temps."}]}],
+v1:[
+ {dit:"Voici la noire : une tête pleine et une tige.",a:[{t:'rythme',m:'n'}]},
+ {dit:"La noire dure un temps. Les temps sont réguliers, comme tes pas quand tu marches.",a:[{t:'rythme',m:'n n n n'}]},
+ {dit:"Écoute : une noire sur chaque temps. Un, deux, trois, quatre.",a:[{t:'compte'}]},
+ {dit:"À toi ! Combien de temps durent ces quatre noires ?",a:[{t:'toiQ',q:"Combien de temps durent ces quatre noires ?",choix:['2 temps','4 temps','8 temps'],rep:'4 temps',expl:"Une noire dure un temps. Quatre noires durent quatre temps."}]}],
+v2:[
+ {dit:"Les barres verticales coupent la musique en mesures.",a:[{t:'rythme',m:'n n n n | n n n n',c:4}]},
+ {dit:"Le chiffre du haut dit combien de temps il y a dans chaque mesure. Ici, quatre. Écoute.",a:[{t:'compte'}]},
+ {dit:"Le chiffre du bas veut dire que la noire vaut un temps. Il reste le même dans tout le jeu.",a:[]},
+ {dit:"À toi ! Combien de noires remplissent une mesure à quatre temps ?",a:[{t:'toiQ',q:"Combien de noires remplissent une mesure à 4 temps ?",choix:['2','3','4'],rep:'4',expl:"Quatre temps, une noire par temps : quatre noires."}]}],
+v3:[
+ {dit:"Voici la blanche : une tête vide et une tige.",a:[{t:'rythme',m:'b'}]},
+ {dit:"La blanche dure deux temps. On la joue sur un temps et on la tient pendant le temps suivant.",a:[{t:'rythme',m:'n n b',c:4}]},
+ {dit:"Écoute : noire, noire, blanche. Un, deux, trois, quatre.",a:[{t:'compte'}]},
+ {dit:"À toi ! Sur quel temps commence la blanche ?",a:[{t:'toiQ',q:"Sur quel temps commence la blanche ?",choix:['Le temps 2','Le temps 3','Le temps 4'],rep:'Le temps 3',expl:"Une noire sur 1, une noire sur 2 : la blanche commence sur 3 et tient jusqu'à 4."}]}],
+v4:[
+ {dit:"Voici la ronde : une tête vide, sans tige.",a:[{t:'rythme',m:'r'}]},
+ {dit:"La ronde dure quatre temps. Elle remplit toute une mesure à quatre temps.",a:[{t:'rythme',m:'r | n n n n',c:4},{t:'compte'}]},
+ {dit:"Une ronde vaut deux blanches, ou quatre noires.",a:[{t:'rythme',m:'r | b b | n n n n',c:4}]},
+ {dit:"À toi ! Combien de noires valent une ronde ?",a:[{t:'toiQ',q:"Combien de noires valent une ronde ?",choix:['2','3','4'],rep:'4',expl:"La ronde dure quatre temps, comme quatre noires."}]}],
+v6:[
+ {dit:"Ici, le chiffre du haut est trois.",a:[{t:'rythme',m:'n n n | b n',c:3}]},
+ {dit:"Chaque mesure compte trois temps. Écoute : un, deux, trois.",a:[{t:'compte'}]},
+ {dit:"Une blanche et une noire font trois temps. Elles remplissent la mesure.",a:[]},
+ {dit:"À toi ! Quel chiffre va en haut ?",a:[{t:'rythme',m:'b n | n n n',c:3,inconnu:true},{t:'toiQ',q:"Quel chiffre va en haut ?",choix:['2','3','4'],rep:'3',expl:"Chaque mesure compte trois temps : le chiffre du haut est 3."}]}],
+v7:[
+ {dit:"Voici une blanche avec un point à droite. C'est la blanche pointée.",a:[{t:'rythme',m:'bp'}]},
+ {dit:"Le point ajoute la moitié de la valeur de la note. La blanche dure deux temps. La moitié de deux, c'est un. Deux plus un : trois temps.",a:[{t:'rythme',m:'b bp'}]},
+ {dit:"Dans une mesure à trois temps, la blanche pointée remplit toute la mesure. Écoute.",a:[{t:'rythme',m:'n n n | bp',c:3},{t:'compte'}]},
+ {dit:"À toi ! Combien de temps dure la blanche pointée ?",a:[{t:'toiQ',q:"Combien de temps dure la blanche pointée ?",choix:['2 temps','3 temps','4 temps'],rep:'3 temps',expl:"Deux temps pour la blanche, plus un pour le point : trois temps."}]}],
+v9:[
+ {dit:"Cette ligne courbe relie deux notes pareilles. C'est une liaison.",a:[{t:'rythme',m:'n n n n~ | n n b',c:4}]},
+ {dit:"On joue la première note, puis on la tient pendant la deuxième, sans la rejouer. Écoute.",a:[{t:'compte'}]},
+ {dit:"Les durées s'additionnent. Une noire liée à une noire dure deux temps.",a:[]},
+ {dit:"À toi ! Deux notes liées : combien de fois les joues-tu ?",a:[{t:'toiQ',q:"Deux notes liées : combien de fois les joues-tu ?",choix:['Une fois','Deux fois'],rep:'Une fois',expl:"On joue la première note et on tient la deuxième sans la rejouer."}]}],
+v10:[
+ {dit:"Un silence est un moment où on ne joue pas. On continue de compter.",a:[{t:'rythme',m:'s'}]},
+ {dit:"Voici le soupir. Il dure un temps, comme la noire.",a:[{t:'rythme',m:'n s n s',c:4}]},
+ {dit:"Écoute : noire, silence, noire, silence.",a:[{t:'compte'}]},
+ {dit:"À toi ! Pendant un soupir, que fais-tu ?",a:[{t:'toiQ',q:"Pendant un soupir, que fais-tu ?",choix:['Je joue','Je compte sans jouer','Je tiens la note'],rep:'Je compte sans jouer',expl:"Le soupir est un silence d'un temps : on compte sans jouer."}]}],
+v11:[
+ {dit:"Voici la demi-pause : un petit rectangle posé sur la ligne du milieu.",a:[{t:'rythme',m:'dp'}]},
+ {dit:"Elle dure deux temps de silence, comme la blanche dure deux temps de son. Écoute.",a:[{t:'rythme',m:'n n dp | dp b',c:4},{t:'compte'}]},
+ {dit:"À toi ! Combien de temps dure la demi-pause ?",a:[{t:'toiQ',q:"Combien de temps dure la demi-pause ?",choix:['1 temps','2 temps','4 temps'],rep:'2 temps',expl:"Deux temps de silence, comme une blanche."}]}],
+v12:[
+ {dit:"Voici la pause : le même petit rectangle, mais il pend sous la quatrième ligne.",a:[{t:'rythme',m:'p',c:4}]},
+ {dit:"La pause dure toute la mesure. Écoute : quatre noires, puis une mesure de silence.",a:[{t:'rythme',m:'n n n n | p',c:4},{t:'compte'}]},
+ {dit:"Pour ne pas les confondre : la pause est plus longue, donc plus lourde, et elle pend. La demi-pause est plus légère, et elle se pose.",a:[{t:'rythme',m:'p | dp b',c:4}]},
+ {dit:"À toi ! Lequel pend sous la ligne ?",a:[{t:'toiQ',q:"Lequel pend sous la ligne ?",choix:['La pause','La demi-pause'],rep:'La pause',expl:"La pause, plus longue, est plus lourde : elle pend sous la ligne."}]}],
+v14:[
+ {dit:"Voici deux croches, attachées par une barre.",a:[{t:'rythme',m:'cc'}]},
+ {dit:"Chaque croche dure un demi-temps. Les deux ensemble durent un temps.",a:[{t:'rythme',m:'n cc n cc',c:4}]},
+ {dit:"On compte : un et, deux et. Écoute.",a:[{t:'compte'}]},
+ {dit:"À toi ! Combien de temps durent deux croches attachées ?",a:[{t:'toiQ',q:"Combien de temps durent deux croches attachées ?",choix:['Un demi-temps','1 temps','2 temps'],rep:'1 temps',expl:"Chaque croche dure un demi-temps. Les deux ensemble durent un temps."}]}],
+v15:[
+ {dit:"Le chiffre du haut peut aussi être deux.",a:[{t:'rythme',m:'n n | b | n n',c:2}]},
+ {dit:"Chaque mesure compte deux temps. Écoute : un, deux. Comme une marche.",a:[{t:'compte'}]},
+ {dit:"À toi ! Quel chiffre va en haut ?",a:[{t:'rythme',m:'n n | b | n n',c:2,inconnu:true},{t:'toiQ',q:"Quel chiffre va en haut ?",choix:['2','3','4'],rep:'2',expl:"Chaque mesure compte deux temps : le chiffre du haut est 2."}]}],
 };
