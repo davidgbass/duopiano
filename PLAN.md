@@ -75,6 +75,15 @@ Testé au Playwright (clavier à l'écran et robot au tempo). Pas encore au banc
 - Jouer une pièce compte pour l'objectif du jour et la série de jours (XP fixe à la fin, quel que soit le résultat).
 - Les pièces restent hors de la révision des notes difficiles : la révision teste, les pièces non.
 
+### Étape 4 : FAITE EN PARTIE le 2026-11-04
+Ajouté : Largo du Nouveau Monde (après s2, ronde), Frère Jacques avec les croches (après s3, croches),
+La Surprise de Haydn (après s7, une octave plus haut), Au clair de la lune et Frère Jacques à la main gauche (après f2, clé de fa).
+Chaque pièce a une présentation parlée sur sa feuille (`INTROS` dans tutos.js, voix `p-<id>-0.m4a`), dite seule la première fois.
+Reste à faire :
+- Berceuse de Brahms : l'original commence par une levée (anacrouse), que le format de pièce refuse (chaque mesure doit être pleine).
+  Il faut soit accepter une mesure incomplète au début, soit un arrangement qui la supprime, et faire vérifier les notes.
+- Ode à la joie partagée entre les deux mains (g1) : le moteur ne dessine qu'une portée. Il faut la grande portée dans `ligneSVG`.
+
 ### Étape 4. Répertoire de départ (notes vérifiées dans PEDAGOGIE.md, section 4)
 | Nœud après | Requis rythme | Pièce |
 |---|---|---|

@@ -5,7 +5,9 @@ globalThis.window={}; eval(fs.readFileSync(new URL('./tutos.js',import.meta.url)
 const dir=new URL('./voix/',import.meta.url).pathname; fs.mkdirSync(dir,{recursive:true});
 const idxF=dir+'index.json'; const idx=fs.existsSync(idxF)?JSON.parse(fs.readFileSync(idxF,'utf8')):{};
 const garder=new Set(['index.json']);
-for(const [id,etapes] of Object.entries(window.TUTOS)){ let tot=0;
+// Les présentations de pièces se génèrent comme un tutoriel d'une seule étape, sous le nom p-<id>.
+const INTROS=Object.fromEntries(Object.entries(window.INTROS||{}).map(([k,v])=>['p-'+k,[{dit:v}]]));
+for(const [id,etapes] of Object.entries({...window.TUTOS,...INTROS})){ let tot=0;
   etapes.forEach((e,i)=>{ const nom=`${id}-${i}.m4a`, h=crypto.createHash('md5').update(e.dit).digest('hex'); garder.add(nom);
     if(idx[nom]?.h!==h||!fs.existsSync(dir+nom)){ const tmp=dir+'tmp.aiff';
       execFileSync('say',['-v','Amélie (Premium)','-r','165','-o',tmp,e.dit]);

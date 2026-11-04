@@ -174,3 +174,16 @@ v15:[
  {dit:"Chaque mesure compte deux temps. Écoute : un, deux. Comme une marche.",a:[{t:'compte'}]},
  {dit:"À toi ! Quel chiffre va en haut ?",a:[{t:'rythme',m:'n n | b | n n',c:2,inconnu:true},{t:'toiQ',q:"Quel chiffre va en haut ?",choix:['2','3','4'],rep:'2',expl:"Chaque mesure compte deux temps : le chiffre du haut est 2."}]}],
 };
+
+// Présentation d'une pièce, dite sur sa feuille la première fois (fichier voix/p-<id>-0.m4a).
+window.INTROS={
+ clair:"Au clair de la lune est une vieille chanson française. Elle n'a que trois notes : Do, Ré et Mi. Écoute-la d'abord, puis joue-la à ton rythme.",
+ jacques:"Frère Jacques ! Pose le pouce droit sur le Do central. Chaque doigt a sa touche, jusqu'à Sol.",
+ joie:"Beethoven a écrit cette mélodie à la fin de sa neuvième symphonie. Elle avance presque toujours par pas, d'une touche à sa voisine.",
+ maman:"Mozart a écrit douze variations sur cet air. Attention, au début, la mélodie saute du Do jusqu'au Sol.",
+ largo:"Cette mélodie lente vient de la Symphonie du Nouveau Monde, de Dvořák. Prends le temps de tenir les blanches et les rondes.",
+ 'jacques-c':"La troisième phrase de Frère Jacques va plus vite : deux croches dans un seul temps. Compte un et, deux et.",
+ surprise:"Cette symphonie de Haydn s'appelle La Surprise. La mélodie saute de Do à Mi, puis à Sol, tout en haut de la portée.",
+ 'clair-g':"Tu connais Au clair de la lune. Cette fois, joue-la avec la main gauche, une octave plus bas, en clé de fa.",
+ 'jacques-g':"Frère Jacques, à la main gauche. Pose le petit doigt gauche sur le Do grave. Chaque doigt a sa touche, jusqu'à Sol.",
+};

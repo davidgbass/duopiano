@@ -33,7 +33,25 @@ const PIECES=[
   m:'C4:n C4:n G4:n G4:n | A4:n A4:n G4:b | F4:n F4:n E4:n E4:n | D4:n D4:n C4:b | '+
     'G4:n G4:n F4:n F4:n | E4:n E4:n D4:b | G4:n G4:n F4:n F4:n | E4:n E4:n D4:b | '+
     'C4:n C4:n G4:n G4:n | A4:n A4:n G4:b | F4:n F4:n E4:n E4:n | D4:n D4:n C4:b'},
+ // Répertoire de l'étape 4 (2026-11-04).
+ {id:'largo',titre:'Largo du Nouveau Monde',sous:'Dvořák',c:4,bpm:60,cle:'sol',apres:'s2',req:'v4',
+  // Thème du cor anglais (2e mouvement), transposé en Do. Le rythme pointé (noire pointée, croche) devient deux noires.
+  m:'E4:n G4:n G4:b | E4:n D4:n C4:b | D4:n E4:n G4:n E4:n | D4:r | '+
+    'E4:n G4:n G4:b | E4:n D4:n C4:b | D4:n E4:n D4:n C4:n | C4:r'},
+ {id:'jacques-c',titre:'Frère Jacques, avec les croches',c:4,bpm:72,cle:'sol',apres:'s3',req:'v14',
+  // Les trois premières phrases. La 4e (« Ding, dang, dong ») descend au Sol grave, sous le Do central.
+  m:'C4:n D4:n E4:n C4:n | C4:n D4:n E4:n C4:n | E4:n F4:n G4:b | E4:n F4:n G4:b | '+
+    'G4:c A4:c G4:c F4:c E4:n C4:n | G4:c A4:c G4:c F4:c E4:n C4:n'},
+ {id:'surprise',titre:'La Surprise',sous:'Haydn',c:4,bpm:80,cle:'sol',apres:'s7',req:'v3',
+  // Thème du 2e mouvement de la Symphonie no 94, une octave plus haut pour rester dans la portée de sol.
+  // Les croches de l'original (à 2 temps) deviennent des noires, la noire finale une blanche.
+  m:'C5:n C5:n E5:n E5:n | G5:n G5:n E5:b | F5:n F5:n D5:n D5:n | B4:n B4:n G4:b | '+
+    'C5:n C5:n E5:n E5:n | G5:n G5:n E5:b | F5:n F5:n D5:n D5:n | B4:n B4:n G4:b'},
 ];
+// Main gauche (après f2) : les mêmes mélodies une octave plus bas, lues en clé de fa. L'enfant les connaît déjà.
+const octave=(m,k)=>m.replace(/([A-G])(\d)/g,(x,l,o)=>l+(+o+k));
+[['clair','Au clair de la lune, main gauche'],['jacques','Frère Jacques, main gauche']].forEach(([id,titre])=>{
+  const b=PIECES.find(x=>x.id===id);PIECES.push({...b,id:id+'-g',titre,cle:'fa',apres:'f2',m:octave(b.m,-1)});});
 const DUREE_P={n:1,b:2,bp:3,r:4,c:.5,s:1,dp:2,p:null};
 const MOTIFS=['#F2B84B','#5FB0E5','#8FCB6B','#E58FB6','#B49BE8','#F08A5D'];
 const SEUIL_MEDAILLE=.9;
@@ -264,7 +282,7 @@ function etatPiece(pc){
   if((et[pc.req]||0)<2) return 'rythme';
   return 'ouverte';
 }
-const ilTeFaut=pc=>'Il te faut '+niveauDe(pc.req).titre.replace(/^L[ae] /,m=>m.toLowerCase()).replace(/^L'/,'l\'');
+const ilTeFaut=pc=>{const t=niveauDe(pc.req).titre;return 'Il te faut '+t[0].toLowerCase()+t.slice(1);};
 function toucherPiece(pc){
   const e=etatPiece(pc);
   if(e==='ouverte'){feuillePiece(pc);return;}
@@ -293,7 +311,7 @@ function feuillePiece(pc){
   const f=document.createElement('div');f.className='feuille';f.setAttribute('role','dialog');f.setAttribute('aria-label',pc.titre);
   f.innerHTML=`<div class="rangee" style="justify-content:space-between"><div class="eyebrow">Pièce${pc.sous?' · '+pc.sous:''}</div><button class="fermer" aria-label="Fermer">×</button></div>
    <h2>${pc.titre}</h2>
-   <div class="dialogue">${mascotte(52)}<div class="dit">Ici, pas de points. Joue-la comme tu veux, autant de fois que tu veux.</div></div>
+   <button class="dialogue intro" aria-label="Réécouter la présentation">${mascotte(52)}<div class="dit">${INTROS[pc.id]||''} Ici, pas de points : joue-la comme tu veux, autant de fois que tu veux.</div></button>
    <div class="choix" style="margin-top:12px">
      <button class="btn" data-m="ecoute">Écoute<small>L'appli joue, tu suis</small></button>
      <button class="btn prim" data-m="libre">À mon rythme<small>La pièce t'attend</small></button>
@@ -305,7 +323,18 @@ function feuillePiece(pc){
   v.append(f);v.hidden=false;
   const fermer=()=>{v.hidden=true;v.innerHTML='';};
   f.querySelector('.fermer').onclick=fermer;v.onclick=ev=>{if(ev.target===v)fermer();};
-  f.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{fermer();lancerPiece(pc.id,b.dataset.m,{lent:!!b.dataset.lent});});
+  f.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{arreterIntro();fermer();lancerPiece(pc.id,b.dataset.m,{lent:!!b.dataset.lent});});
+  f.querySelector('.fermer').onclick=()=>{arreterIntro();fermer();};
+  // La présentation se dit d'elle-même la première fois, puis d'un toucher sur la bulle.
+  const cle='p-'+pc.id,p=P(),tu=p.tutos||(p.tutos={});
+  f.querySelector('.intro').onclick=()=>direIntro(pc.id);
+  if(!tu[cle]&&INTROS[pc.id]){tu[cle]=true;sauver();direIntro(pc.id);}
+}
+let introSrc=null;
+function arreterIntro(){ try{introSrc&&introSrc.stop();}catch(e){} introSrc=null; }
+async function direIntro(id){
+  arreterIntro();const buf=await chargerVoix(`p-${id}-0.m4a`);if(!buf) return;
+  const c=audio(),src=c.createBufferSource();src.buffer=buf;src.connect(c.destination);src.start();introSrc=src;ecoute.ignorer(buf.duration*1000+300);
 }
 function mesPieces(){
   const v=$('#voile');v.innerHTML='';
